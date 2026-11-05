@@ -24,6 +24,7 @@
   --c-rest:#b8645a; --c-depol:#ffd60a; --c-plateau:#ff6a2b; --c-repol:#1f9bff;
   --c-vec:#c2187a; --c-pos:#17914a; --c-neg:#d23c3c; --c-axis:#17914a;
   --c-p:#d98c0a; --c-qrs:#c2187a; --c-t:#0c8f84; --c-cs:#c9a227;
+  --c-zone:#6d3fc0; --c-scar:#8f8a85; --c-inj:#a05ad8; --c-ghost:#b9aea3; --c-cut:#d23c3c; --c-acc:#0a8f5a;
   --shadow:0 1px 2px rgba(40,25,10,.06),0 4px 14px rgba(40,25,10,.06);
 }
 @media (prefers-color-scheme: dark){
@@ -36,6 +37,7 @@
     --c-rest:#a85d55; --c-depol:#ffe14d; --c-plateau:#ff7a3d; --c-repol:#4cb4ff;
     --c-vec:#ff4fa8; --c-pos:#3ccf7a; --c-neg:#ff6b6b; --c-axis:#3ccf7a;
     --c-p:#f2a93b; --c-qrs:#ff4fa8; --c-t:#2fd1c0; --c-cs:#e8c547;
+    --c-zone:#b58cff; --c-scar:#9a948e; --c-inj:#c08cff; --c-ghost:#5d5650; --c-cut:#ff6b6b; --c-acc:#3fd99a;
     --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
   }
 }
@@ -48,6 +50,7 @@
   --c-rest:#a85d55; --c-depol:#ffe14d; --c-plateau:#ff7a3d; --c-repol:#4cb4ff;
   --c-vec:#ff4fa8; --c-pos:#3ccf7a; --c-neg:#ff6b6b; --c-axis:#3ccf7a;
   --c-p:#f2a93b; --c-qrs:#ff4fa8; --c-t:#2fd1c0; --c-cs:#e8c547;
+  --c-zone:#b58cff; --c-scar:#9a948e; --c-inj:#c08cff; --c-ghost:#5d5650; --c-cut:#ff6b6b; --c-acc:#3fd99a;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
 }
 *{box-sizing:border-box}
@@ -70,7 +73,11 @@ header.top .sub{margin:2px 0 0;color:var(--ink-2);font-size:.88rem}
 
 :root{--stageH:min(62vh,520px)}
 @media (min-width:820px){:root{--stageH:max(430px,calc(100vh - 340px))}}
-.layout{display:grid;gap:12px;grid-template-columns:minmax(0,1fr);grid-template-areas:"stage" "strip" "side" "twelve"}
+.layout{display:grid;gap:12px;grid-template-columns:minmax(0,1fr);grid-template-areas:"scnbar" "stage" "strip" "side" "twelve"}
+.scnbar{grid-area:scnbar;display:flex;align-items:center;gap:8px;padding:8px 10px}
+.scnbar label{font-size:.82rem;color:var(--ink-2);font-weight:600;white-space:nowrap}
+.scnbar select{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface-2);border-radius:10px;padding:6px 8px;font-size:.92rem}
+@media (min-width:820px){.scnbar{display:none}}
 @media (min-width:820px){
   .layout{grid-template-columns:300px minmax(0,1fr);grid-template-areas:"side stage" "strip strip" "twelve twelve"}
   .side{height:var(--stageH);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding-inline-end:2px}
@@ -107,6 +114,8 @@ header.top .sub{margin:2px 0 0;color:var(--ink-2);font-size:.88rem}
 .leadgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
 .leadbtn{border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:4px 0;cursor:pointer;font-size:.82rem;font-weight:600;direction:ltr}
 .leadbtn[aria-pressed="true"]{background:var(--c-axis);border-color:var(--c-axis);color:#fff}
+.leadbtn[hidden]{display:none}
+.leadbtn.post{border-style:dashed}
 .toggles{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}
 .tg{display:flex;align-items:center;gap:7px;font-size:.86rem;cursor:pointer;user-select:none;padding:2px 0}
 .tg input{width:16px;height:16px;accent-color:var(--accent);margin:0}
@@ -121,6 +130,30 @@ header.top .sub{margin:2px 0 0;color:var(--ink-2);font-size:.88rem}
 .sw.arrow::after{content:"";position:absolute;inset-inline-end:0;top:1px;border:4px solid transparent;border-inline-end:0;border-inline-start:6px solid var(--col)}
 [dir=rtl] .sw.arrow{transform:scaleX(-1)}
 .divider{height:1px;background:var(--line);margin:0 -14px}
+.scn{padding:10px 14px 12px;flex:none;display:none}
+@media (min-width:820px){.scn{display:block}}
+.scn h3{margin:0 0 6px;font-size:.8rem;font-weight:600;color:var(--ink-2)}
+.scn-group{display:flex;flex-wrap:wrap;align-items:center;gap:4px 5px;margin:0 0 6px}
+.scn-group .gl{font-size:.72rem;color:var(--ink-3);width:100%;margin-top:2px}
+.chip{border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:3px 10px;cursor:pointer;font-size:.8rem;line-height:1.35;color:var(--ink)}
+.chip:hover{border-color:var(--ink-3)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .chip[aria-pressed="true"]{color:#1a0d0b}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#1a0d0b}}
+.chip:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.scninfo{padding:12px 14px;flex:none}
+.scninfo[hidden]{display:none}
+.scninfo h2{margin:0 0 6px;font-size:1.02rem;line-height:1.35;display:flex;align-items:center;gap:6px}
+.scninfo h2 .sw{flex:none}
+.scninfo .broken{margin:0 0 8px;font-size:.88rem}
+.scninfo dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;font-size:.84rem}
+.scninfo dt{color:var(--ink-2);font-weight:600;white-space:nowrap}
+.scninfo dd{margin:0}
+.scninfo ul{margin:0;padding-inline-start:16px}
+.scninfo li{margin:1px 0}
+.scninfo .field{margin-top:8px;padding:8px 10px;border-radius:10px;background:var(--accent-soft);font-size:.84rem}
+.scninfo .model-note{margin-top:6px;font-size:.76rem;color:var(--ink-3)}
+.scn-pill{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;font-weight:600;border-radius:999px;padding:2px 9px;background:var(--accent-soft);color:var(--accent);margin-inline-start:6px}
 
 .strip{grid-area:strip;padding:8px 10px 10px}
 .stripbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-bottom:6px}
@@ -139,6 +172,9 @@ header.top .sub{margin:2px 0 0;color:var(--ink-2);font-size:.88rem}
 .mini{display:block;width:100%;height:64px;border-radius:8px;border:1px solid var(--line);cursor:pointer;background:var(--paper);padding:0}
 @media (min-width:1200px){.minigrid{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(6,minmax(0,1fr));flex:1;min-height:0}.mini{height:100%;min-height:40px}}
 .mini[aria-pressed="true"]{border-color:var(--c-axis);box-shadow:0 0 0 2px color-mix(in srgb,var(--c-axis) 45%,transparent)}
+.mini[hidden]{display:none}
+.minigrid.post{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media (min-width:1200px){.minigrid.post{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr))}}
 .twelve .note{font-size:.74rem;color:var(--ink-3);margin:6px 0 0}
 
 footer{margin-top:14px;color:var(--ink-3);font-size:.8rem;display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:space-between}
@@ -155,6 +191,7 @@ footer{margin-top:14px;color:var(--ink-3);font-size:.8rem;display:flex;flex-wrap
 body.solo .stage{position:fixed;inset:0;height:100vh;border-radius:0;z-index:30;border:0}
 body.solo .viewbar,body.solo .hud{display:none}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -171,6 +208,10 @@ body.solo .viewbar,body.solo .hud{display:none}
   </header>
 
   <main class="layout">
+    <div class="card scnbar" id="scnBar">
+      <label for="scnSelect">תרחיש</label>
+      <select id="scnSelect" aria-label="בחירת תרחיש"></select>
+    </div>
     <section class="stage" id="stage" aria-label="תצוגת הלב התלת-ממדית">
       <canvas id="gl" aria-hidden="true"></canvas>
       <div class="loading" id="loading">מחשב את המודל…</div>
@@ -189,6 +230,10 @@ body.solo .viewbar,body.solo .hud{display:none}
     </section>
 
     <div class="side">
+    <section class="card scn" id="scnCard" aria-label="בחירת תרחיש">
+      <h3>תרחיש</h3>
+      <div id="scnList"></div>
+    </section>
     <section class="card explain" id="explain" aria-live="polite">
       <span class="phase-pill" id="phasePill"><i></i><span id="phaseTag">—</span></span>
       <h2 id="phaseTitle">—</h2>
@@ -196,6 +241,7 @@ body.solo .viewbar,body.solo .hud{display:none}
       <div class="leadline" id="leadLine"></div>
       <div class="readouts" id="readouts"></div>
     </section>
+    <section class="card scninfo" id="scnInfo" hidden aria-label="מה רואים בתרחיש"></section>
 
     <section class="card controls" id="controls" aria-label="הגדרות תצוגה">
       <div>
@@ -240,6 +286,9 @@ body.solo .viewbar,body.solo .hud{display:none}
           <span><i class="sw arrow" style="--col:var(--c-pos)"></i>הטל על החיבור</span>
           <span><i class="sw bar" style="background:var(--c-cs)"></i>מערכת ההולכה</span>
           <span><i class="sw bar" style="background:linear-gradient(90deg,var(--c-p) 0 33%,var(--c-qrs) 33% 66%,var(--c-t) 66%)"></i>לולאות <span class="ltr">P · QRS · T</span></span>
+          <span class="lg-scn" hidden><i class="sw" style="background:var(--c-inj)"></i>פלטו נמוך (תאים פצועים)</span>
+          <span class="lg-scn" hidden><i class="sw" style="background:var(--c-scar)"></i>צלקת (לא מופעלת)</span>
+          <span class="lg-scn" hidden><i class="sw bar" style="background:var(--c-ghost)"></i>אק״ג תקין להשוואה</span>
         </div>
       </div>
     </section>
@@ -254,6 +303,11 @@ body.solo .viewbar,body.solo .hud{display:none}
           <button type="button" data-speed="1" aria-pressed="false"><span class="ltr">×1</span></button>
         </div>
         <label class="tg"><input type="checkbox" id="tgLoopPlay" checked>חזרה</label>
+        <div class="seg" role="group" aria-label="שלב האוטם" id="stageSeg" hidden>
+          <button type="button" data-stage="acute" aria-pressed="true">חריף</button>
+          <button type="button" data-stage="old" aria-pressed="false">ישן</button>
+        </div>
+        <label class="tg" id="compareWrap" hidden><input type="checkbox" id="tgCompare" checked>השוואה לתקין</label>
         <span class="spacer"></span>
         <span class="lead-now"><span class="ltr" id="leadNow">II</span></span>
         <span class="meta" id="stripMeta"></span>
@@ -262,13 +316,13 @@ body.solo .viewbar,body.solo .hud{display:none}
     </section>
 
     <section class="card twelve" aria-label="12 חיבורים">
-      <h3>12 חיבורים · לחיצה בוחרת חיבור</h3>
+      <h3 id="twelveTitle">12 חיבורים · לחיצה בוחרת חיבור</h3>
       <div class="minigrid" id="miniGrid"></div>
       <p class="note">אותה פעימה ואותו סמן בכל החיבורים; כל חיבור = הטל של אותו וקטור על כיוון אחר.</p>
     </section>
 
     <section class="card" id="debug" hidden>
-      <strong>בדיקה עצמית (מספרית) של 12 החיבורים</strong>
+      <strong>בדיקה עצמית (מספרית) של 12 החיבורים</strong> <span id="debugScn"></span>
       <div id="debugBody"></div>
     </section>
   </main>
@@ -287,6 +341,7 @@ body.solo .viewbar,body.solo .hud{display:none}
       <li><b>סובבו</b> את הלב בגרירה, <b>הגדילו</b> בגלגלת או בצביטה, <b>הזיזו</b> בשתי אצבעות או בלחצן ימני.</li>
       <li><b>בחרו חיבור</b> (למשל <span class="ltr">II</span> או <span class="ltr">V1</span>): הציר הירוק מראה מאיפה החיבור "מסתכל", וההטל של וקטור הלב על הציר הוא בדיוק הערך שמצויר בגרף.</li>
       <li><b>נגן</b> מריץ את הפעימה בהילוך איטי; <b>מישור חיתוך</b> חושף את פנים הדופן ואת חזית הגל.</li>
+      <li><b>תרחישים</b> (חסמים, אוטמים, <span class="ltr">WPW</span>, <span class="ltr">LVH</span>): המודל משתנה, והאק״ג החדש מחושב ממנו. האק״ג התקין מוצג באפור להשוואה.</li>
     </ul>
     <button class="btn primary" type="button" id="helpClose">הבנתי</button>
   </div>
@@ -320,7 +375,7 @@ const HeartModel = (() => {
   const DEFAULTS = {
     // anatomy: long axis base->apex in patient frame (left, inferior, anterior)
     apexDir: [0.55, -0.75, 0.35],
-    roll: -48,                 // deg rotation about the long axis
+    roll: -40,                 // deg rotation about the long axis (septum ~ oblique, RV anterior-right)
     hV: 0.34, hA: 0.23,         // sampling spacing ventricles / atria (cm)
     wallA: 0.24,                // atrial wall (cm)
     wallRV: 0.45,               // RV free wall (cm)
@@ -332,10 +387,14 @@ const HeartModel = (() => {
     purkTopLV: 1.0, purkTopRV: 1.0, purkRVOT: 1.6, purkDepth: 0.22, purkPostBase: 0.72, purkPostZ: -1.0,
     // action potential
     apdA: 150, tauRepA: 14, tauUp: 2.2,
-    apdV: 212, apdEndo: 45, apdBase: 26, apdRV: -6, tauRepV: 21,
+    apdV: 212, apdEndo: 45, apdBase: 26, apdRV: -6, tauRepV: 21, plateauSlope: 0.15,
     // timing of the displayed beat
     tStart: 70, beatLen: 800, dt: 1, smoothMs: 2.0,
     targetII: 1.25,             // calibrate R in lead II (mV)
+    gain: 0,                    // >0: use this fixed gain (scenarios reuse the normal heart's gain so voltages are comparable)
+    lvWallAdd: 0,               // extra LV wall thickness (cm) – LVH scenario
+    purkScaleL: 1, purkScaleR: 1, // Purkinje speed factor per side (retrograde, slow engagement behind a blocked bundle)
+    purkScaleFasc: 0.35, fascSplit: -0.3, apexShared: 0.15, fascDir: [0.7, 0.7, 0], fascMode: 'inside',        // same for the Purkinje territory of a blocked fascicle (LAFB)
   };
 
   // ---------------- SDF primitives ----------------
@@ -355,7 +414,7 @@ const HeartModel = (() => {
 
   // ---------------- anatomy (ventricular frame: X lateral-left, Y toward base, Z anterior) ----------------
   // Shapes are in the local "heart frame"; the frame is tilted into the chest below.
-  const A = {
+  const A0 = {
     Yb: 1.7,               // ventricular base / valve plane
     YaMin: 2.08,           // atria start above the fibrous ring
     Yapex: -6.2,
@@ -371,7 +430,18 @@ const HeartModel = (() => {
     SVC: [-2.3, 5.3, -0.6], IVC: [-2.2, 2.4, -2.2],                // caval entries into the RA
   };
 
-  function makeGeometry(P) {
+  // anatomy for one build (LVH thickens the LV wall: outer surface grows, cavity shrinks a little)
+  function makeAnatomy(P) {
+    const A = JSON.parse(JSON.stringify(A0));
+    const d = P.lvWallAdd || 0;
+    if (d) {
+      A.LVo.r = [A0.LVo.r[0] + 0.7 * d, A0.LVo.r[1] + 0.35 * d, A0.LVo.r[2] + 0.7 * d];
+      A.LVi.r = [A0.LVi.r[0] - 0.3 * d, A0.LVi.r[1] - 0.15 * d, A0.LVi.r[2] - 0.3 * d];
+      A.Yapex = A0.Yapex - 0.35 * d;
+    }
+    return A;
+  }
+  function makeGeometry(P, A) {
     const wA = P.wallA, wRV = P.wallRV;
     function parts(q) {
       const dLVo = sdEll(q, A.LVo.c, A.LVo.r);
@@ -464,13 +534,13 @@ const HeartModel = (() => {
 
   // ---------------- AP shape ----------------
   // normalised transmembrane potential: 0 = rest, 1 = plateau
-  function apShape(tau, apd, tauUp, tauRep) {
+  function apShape(tau, apd, tauUp, tauRep, slope = 0.06) {
     if (tau < -8 * tauUp) return 0;
     const up = 0.5 * (1 + Math.tanh(tau / tauUp));
     const x = (tau - apd) / tauRep;
     const rep = x > 30 ? 0 : 1 / (1 + Math.exp(x));
     // gentle plateau (phase 2) decline, identical shape for all cells
-    return up * rep * (1 - 0.06 * clamp(tau / apd, 0, 1));
+    return up * rep * (1 - slope * clamp(tau / apd, 0, 1));
   }
 
   const TISSUE = { RA: 0, LA: 1, RV: 2, LV: 3, SEP: 4 };
@@ -486,7 +556,8 @@ const HeartModel = (() => {
   function build(scenario = {}) {
     const T0 = (typeof performance !== 'undefined' ? performance : Date).now();
     const P = Object.assign({}, DEFAULTS, scenario.params || {});
-    const G = makeGeometry(P);
+    const A = makeAnatomy(P);
+    const G = makeGeometry(P, A);
     const F = makeFrame(P);
     const R = rng(12345);
 
@@ -501,7 +572,8 @@ const HeartModel = (() => {
       }
     }
     // ventricles
-    sampleBox(P.hV, [-5.2, -6.4, -3.2], [3.2, 3.6, 4.4], (q, d, t) => {
+    const gx = 0.75 * (P.lvWallAdd || 0);
+    sampleBox(P.hV, [-5.2 - gx, -6.4 - gx, -3.2 - gx], [3.2 + gx, 3.6, 4.4 + gx], (q, d, t) => {
       const s = clamp((q[1] - A.Yapex) / (A.Yb - A.Yapex), 0, 1);
       if (t.lv < 0) {
         const inRV = d.dRV < 0;
@@ -584,8 +656,23 @@ const HeartModel = (() => {
       for (let k = 0; k < poly.length - 1; k++) m = Math.min(m, sdCap(lq, poly[k], poly[k + 1], 0));
       return m;
     }
-    const tissueMods = pts.map(() => ({ vScale: 1, apdAdd: 0, blocked: false }));
-    if (scenario.tissue) pts.forEach((pt, i) => scenario.tissue(pt, tissueMods[i]));
+    // regional tissue changes (scenario hook):
+    //   vScale  conduction-velocity factor     apdAdd  APD change (ms)
+    //   amp     action-potential amplitude (plateau) factor: <1 = injured / ischaemic cells (injury current)
+    //   blocked dead scar: not excitable, not conducting, and no current source (electrically silent)
+    //   zone    display tag (1 = infarct / injury zone, 2 = ischaemic zone)
+    const tissueMods = pts.map(() => ({ vScale: 1, apdAdd: 0, amp: 1, blocked: false, zone: 0 }));
+    const ctx = {
+      F, A, P, TISSUE,
+      radial: pt => nrm(F.dirP([pt.l[0], 0, pt.l[2]])),          // outward direction from the LV long axis (patient frame)
+      across: d => nrm(sub(d, mul(F.e3, dot(d, F.e3)))),          // a patient direction projected across the long axis
+    };
+    if (scenario.tissue) pts.forEach((pt, i) => scenario.tissue(pt, tissueMods[i], ctx));
+    // scar is an insulator: remove it from the neighbour lists used for gradients / dipole sources
+    for (let i = 0; i < n; i++) for (let c = 0; c < K; c++) {
+      const j = nbr[i * K + c]; if (j < 0) continue;
+      if (tissueMods[i].blocked || tissueMods[j].blocked) nbr[i * K + c] = -1;
+    }
 
     const bach = new Uint8Array(n);
     for (let i = nV; i < n; i++) bach[i] = distToPolyline(pts[i].l, cs.bachmann) < 0.75 ? 1 : 0;
@@ -596,8 +683,34 @@ const HeartModel = (() => {
       if (pt.dEndo > P.purkDepth) continue;
       if (pt.endoSide === 'L' && pt.s < P.purkTopLV && !(pt.s > P.purkPostBase && pt.l[2] < P.purkPostZ)) purk[i] = 1; // posterobasal LV: sparse Purkinje -> activated last
       if (pt.endoSide === 'R' && pt.s <= P.purkTopRV && pt.l[1] < A.Yb + P.purkRVOT) purk[i] = 2;
+      if (tissueMods[i].blocked) purk[i] = 0;
+    }
+    // fascicle territory of each LV Purkinje point: septal fibres serve only the septum; the free wall is split between the
+    // anterior (anterosuperior + lateral, larger) and posterior (inferoposterior) fascicles
+    const fascTerr = new Array(n).fill('');
+    for (let i = 0; i < nV; i++) {
+      if (purk[i] !== 1) continue;
+      if (pts[i].type === TISSUE.SEP && distToPolyline(pts[i].l, cs.fasc.septal) < distToPolyline(pts[i].l, cs.fasc.posterior)) { fascTerr[i] = 'septal'; continue; }
+      if (pts[i].s < P.apexShared) { fascTerr[i] = 'apex'; continue; } // apical Purkinje is fed by all fascicles (incl. septal fibres)
+      // free wall: superior-facing half -> anterior (anterosuperior) fascicle, inferior-facing half -> posterior (inferoposterior) fascicle
+      fascTerr[i] = dot(ctx.radial(pts[i]), ctx.across(P.fascDir)) > P.fascSplit ? 'anterior' : 'posterior';
+    }
+    // Purkinje speed factor per point: territory of a blocked bundle is engaged slowly (retrograde).
+    // A blocked fascicle's territory keeps its fast network, but is reached only through slow peripheral
+    // connections from the neighbouring territories (purkEdge below).
+    const pScale = new Float32Array(n).fill(1);
+    for (let i = 0; i < nV; i++) {
+      if (purk[i] === 1) {
+        pScale[i] = P.purkScaleL;
+      } else if (purk[i] === 2) pScale[i] = P.purkScaleR;
     }
 
+    const purkEdge = (i, j) => {
+      let f = Math.min(pScale[i], pScale[j]);
+      if (P.fascMode === 'inside') { if (cs.blocked[fascTerr[i]] || cs.blocked[fascTerr[j]]) f *= P.purkScaleFasc; }
+      else if (fascTerr[i] !== fascTerr[j] && (cs.blocked[fascTerr[i]] || cs.blocked[fascTerr[j]])) f *= P.purkScaleFasc;
+      return f;
+    };
     // build CSR graph
     const edges = [];
     for (let i = 0; i < n; i++) for (let c = 0; c < K; c++) {
@@ -606,7 +719,7 @@ const HeartModel = (() => {
       const d = nbrDist(i, j);
       let v;
       if (isAtr(i)) v = (bach[i] && bach[j]) ? P.vBach : P.vAtr;
-      else v = (purk[i] && purk[i] === purk[j]) ? P.vPurk : P.vMyo;
+      else v = (purk[i] && purk[i] === purk[j]) ? P.vPurk * purkEdge(i, j) : P.vMyo;
       v *= Math.min(tissueMods[i].vScale, tissueMods[j].vScale);
       edges.push([i, j, d / v], [j, i, d / v]);
     }
@@ -616,7 +729,7 @@ const HeartModel = (() => {
       const pb = [];
       for (let i = 0; i < nV; i++) if (purk[i]) {
         hash.query(pos[3 * i], pos[3 * i + 1], pos[3 * i + 2], 0.75, pb);
-        for (let b = 0; b < pb.length; b += 2) { const j = pb[b]; if (j > i && purk[j] === purk[i]) { const d = Math.sqrt(pb[b + 1]); const mid = mul(add(pts[i].l, pts[j].l), 0.5); if (G.myoSDF(mid) > 0.06) continue; edges.push([i, j, d / P.vPurk], [j, i, d / P.vPurk]); } }
+        for (let b = 0; b < pb.length; b += 2) { const j = pb[b]; if (j > i && purk[j] === purk[i]) { const vp = P.vPurk * purkEdge(i, j); const d = Math.sqrt(pb[b + 1]); const mid = mul(add(pts[i].l, pts[j].l), 0.5); if (G.myoSDF(mid) > 0.06) continue; edges.push([i, j, d / vp], [j, i, d / vp]); } }
       }
     }
     const adjStart = new Int32Array(n + 1);
@@ -634,11 +747,11 @@ const HeartModel = (() => {
 
     // ---------- His-Purkinje tree times ----------
     const tree = []; // segments for drawing: {a:[P], b:[P], ta, tb, kind}
-    function walk(poly, t0, v, kind) {
-      let t = t0; const out = [[poly[0], t]];
+    function walk(poly, t0, v, kind, cut, markCut = cut) {
+      let t = cut ? Infinity : t0; const out = [[poly[0], t]];
       for (let k = 0; k < poly.length - 1; k++) {
         const dt = len(sub(poly[k + 1], poly[k])) / v;
-        tree.push({ a: L2P(poly[k]), b: L2P(poly[k + 1]), ta: t, tb: t + dt, kind });
+        tree.push({ a: L2P(poly[k]), b: L2P(poly[k + 1]), ta: t, tb: t + dt, kind, blocked: !!cut, cutHere: !!markCut && k === 0 });
         t += dt; out.push([poly[k + 1], t]);
       }
       return out;
@@ -665,19 +778,36 @@ const HeartModel = (() => {
         }
       }
     }
-    if (!cs.blocked.lbb) {
-      const stem = walk(cs.lbbStem, tBif, P.vBundle, 'lbb');
+    {
+      const lbbCut = !!cs.blocked.lbb;
+      const stem = walk(cs.lbbStem, tBif, P.vBundle, 'lbb', lbbCut);
       const tL = stem[stem.length - 1][1];
       for (const [name, poly] of Object.entries(cs.fasc)) {
-        if (cs.blocked[name]) continue;
-        const path = walk(poly, tL, P.vBundle, 'lbb');
+        const cut = !lbbCut && !!cs.blocked[name];
+        const path = walk(poly, tL, P.vBundle, 'lbb', lbbCut || cut, cut); // the cross marks only the site of the block
+        if (lbbCut || cut) continue;
         // terminal branches insert along the distal 2/3 of each fascicle
         seedAlong(path.slice(name === 'septal' ? 1 : P.fascSeedFrom), 0.5, 0.55);
       }
+      const rbbCut = !!cs.blocked.rbb;
+      const path = walk(cs.rbb, tBif + P.rbbDelay, P.vBundle, 'rbb', rbbCut);
+      if (!rbbCut) seedAlong(path.slice(P.rbbSeedFrom), 0.5, 0.6); // lower septal RV surface + moderator band / anterior papillary muscle
     }
-    if (!cs.blocked.rbb) {
-      const path = walk(cs.rbb, tBif + P.rbbDelay, P.vBundle, 'rbb');
-      seedAlong(path.slice(P.rbbSeedFrom), 0.5, 0.6); // lower septal RV surface + moderator band / anterior papillary muscle
+    let tHisV = Infinity; for (const [, tq] of seedsV) tHisV = Math.min(tHisV, tq);
+    // accessory pathway (WPW): atrial insertion -> ventricular insertion, bypassing the AV node
+    let tAccV = Infinity, acc = null;
+    if (scenario.accessory) {
+      const ac = scenario.accessory;
+      const iv = typeof ac.v === 'function' ? ac.v(pts, nV) : nearest(ac.v, [TISSUE.LV, TISSUE.RV, TISSUE.SEP]);
+      const ia = typeof ac.a === 'function' ? ac.a(pts, iv, nV) : nearest(ac.a, [TISSUE.RA, TISSUE.LA]);
+      const tA = atr.t[ia];
+      tAccV = tA + ac.delay;
+      tree.push({ a: pts[ia].p, b: pts[iv].p, ta: tA, tb: tAccV, kind: 'acc' });
+      for (let i = 0; i < nV; i++) {
+        if (tissueMods[i].blocked) continue;
+        const d = len(sub(pts[i].l, pts[iv].l)); if (d < (ac.radius || 0.5)) seedsV.push([i, tAccV + d / P.vMyo]);
+      }
+      acc = { ia, iv };
     }
     const ven = dijkstra(n, adjStart, adjTo, adjW, seedsV);
     const tAct = new Float64Array(n);
@@ -702,6 +832,8 @@ const HeartModel = (() => {
     }
     const tauRep = new Float64Array(n);
     for (let i = 0; i < n; i++) tauRep[i] = isAtr(i) ? P.tauRepA : P.tauRepV;
+    const amp = new Float32Array(n), zone = new Uint8Array(n);
+    for (let i = 0; i < n; i++) { amp[i] = tissueMods[i].amp; zone[i] = tissueMods[i].zone; }
 
     // ---------- least-squares gradient operator ----------
     // grad f_i = sum_j G_ij (f_j - f_i)
@@ -757,10 +889,10 @@ const HeartModel = (() => {
     for (let i = 0; i < n; i++) {
       if (!isFinite(tAct[i])) continue;
       const cx = Cw[3 * i], cy = Cw[3 * i + 1], cz = Cw[3 * i + 2];
-      const ta = tAct[i], ad = apd[i], tr = tauRep[i];
+      const ta = tAct[i], ad = apd[i], tr = tauRep[i], am = amp[i];
       const k0 = Math.max(0, Math.floor((ta - 10 * P.tauUp) / P.dt));
       for (let k = k0; k < nT; k++) {
-        const v = apShape(k * P.dt - ta, ad, P.tauUp, tr);
+        const v = am * apShape(k * P.dt - ta, ad, P.tauUp, tr, P.plateauSlope);
         if (v === 0 && k * P.dt > ta) break;
         Hraw[3 * k] += cx * v; Hraw[3 * k + 1] += cy * v; Hraw[3 * k + 2] += cz * v;
       }
@@ -789,8 +921,11 @@ const HeartModel = (() => {
       V5: [12.0, -1.6, 1.8], V6: [13.8, -1.6, -3.4],
     };
     electrodes.V3 = mul(add(electrodes.V2, electrodes.V4), 0.5);
-    for (const v of ['V1', 'V2', 'V3', 'V4', 'V5', 'V6']) leads[v] = nrm(electrodes[v]);
+    // posterior leads at the V6 level: V7 posterior axillary, V8 mid-scapular, V9 left paravertebral
+    electrodes.V7 = [11.6, -1.6, -8.4]; electrodes.V8 = [7.6, -1.6, -11.4]; electrodes.V9 = [3.2, -1.6, -12.6];
+    for (const v of ['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9']) leads[v] = nrm(electrodes[v]);
     const LEAD_NAMES = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6'];
+    const ALL_LEADS = LEAD_NAMES.concat(['V7', 'V8', 'V9']);
 
     // ---------- events (from the model's own activation data) ----------
     let aMin = Infinity, aMax = -Infinity, vMin = Infinity, vMax = -Infinity, nUnact = 0;
@@ -803,17 +938,20 @@ const HeartModel = (() => {
     const qrsOn = vMin - 3, qrsOff = vMax + 6;
     let mx = 0;
     for (let k = Math.floor(qrsOn / P.dt); k <= Math.ceil(qrsOff / P.dt); k++) mx = Math.max(mx, Math.abs(dot([Hraw[3 * k], Hraw[3 * k + 1], Hraw[3 * k + 2]], LII)));
-    const gain = P.targetII / (mx || 1);
+    const gain = P.gain > 0 ? P.gain : P.targetII / (mx || 1);
     const H = new Float64Array(3 * nT);
     for (let k = 0; k < 3 * nT; k++) H[k] = Hraw[k] * gain;
     const Hat = t => { const f = clamp(t / P.dt, 0, nT - 1), k = Math.floor(f), u = f - k, k2 = Math.min(k + 1, nT - 1); return [H[3 * k] * (1 - u) + H[3 * k2] * u, H[3 * k + 1] * (1 - u) + H[3 * k2 + 1] * u, H[3 * k + 2] * (1 - u) + H[3 * k2 + 2] * u]; };
     const ecg = {};
-    for (const nm of LEAD_NAMES) { const L = leads[nm], a = new Float32Array(nT); for (let k = 0; k < nT; k++) a[k] = H[3 * k] * L[0] + H[3 * k + 1] * L[1] + H[3 * k + 2] * L[2]; ecg[nm] = a; }
+    for (const nm of ALL_LEADS) { const L = leads[nm], a = new Float32Array(nT); for (let k = 0; k < nT; k++) a[k] = H[3 * k] * L[0] + H[3 * k + 1] * L[1] + H[3 * k + 2] * L[2]; ecg[nm] = a; }
     const Hmag = k => Math.hypot(H[3 * k], H[3 * k + 1], H[3 * k + 2]);
     let tPeakK = 0, tPeak = 0;
     for (let k = Math.ceil((qrsOff + 60) / P.dt); k < nT; k++) if (Hmag(k) > tPeak) { tPeak = Hmag(k); tPeakK = k; }
     let tEndK = tPeakK; while (tEndK < nT - 1 && Hmag(tEndK) > 0.05 * tPeak) tEndK++;
-    let tOnK = Math.ceil((qrsOff + 10) / P.dt); while (tOnK < tPeakK && Hmag(tOnK) < 0.15 * tPeak) tOnK++;
+    const kST = Math.ceil((qrsOff + 15) / P.dt), Hst = [H[3 * kST], H[3 * kST + 1], H[3 * kST + 2]];
+    const dHst = k => Math.hypot(H[3 * k] - Hst[0], H[3 * k + 1] - Hst[1], H[3 * k + 2] - Hst[2]);
+    const tRef = dHst(tPeakK);
+    let tOnK = Math.ceil((qrsOff + 10) / P.dt); while (tOnK < tPeakK && dHst(tOnK) < 0.15 * tRef) tOnK++;
     let rPeakK = 0, rMax = 0;
     for (let k = Math.floor(qrsOn / P.dt); k <= Math.ceil(qrsOff / P.dt); k++) if (Hmag(k) > rMax) { rMax = Hmag(k); rPeakK = k; }
     let pPeakK = 0, pMax = 0;
@@ -824,13 +962,14 @@ const HeartModel = (() => {
       qrsOn, qrsOff, rPeak: rPeakK * P.dt,
       tOn: tOnK * P.dt, tPeak: tPeakK * P.dt, tEnd: tEndK * P.dt,
       septalEnd: vMin + 14,
+      hisV: tHisV + P.tStart, accV: tAccV + P.tStart,
     };
 
     const model = {
       P, A, F, G, n, nV, K, pts, pos, nbr, tAct, apd, tauRep, tRep, propDir, repDir, purk, bach,
-      tree, purkSegs, iSA, iAVN, cs: { ...cs, SA_P: L2P(cs.SA), AVN_P: L2P(cs.AVN) },
-      H, Hat, nT, ecg, leads, electrodes, LEAD_NAMES, ev, gain, nUnact,
-      vm: (i, t) => apShape(t - tAct[i], apd[i], P.tauUp, tauRep[i]),
+      tree, purkSegs, iSA, iAVN, fascTerr, cs: { ...cs, SA_P: L2P(cs.SA), AVN_P: L2P(cs.AVN) }, acc,
+      H, Hat, nT, ecg, leads, electrodes, LEAD_NAMES, ALL_LEADS, ev, gain, nUnact, amp, zone, dead: Uint8Array.from(tissueMods, m => m.blocked ? 1 : 0),
+      vm: (i, t) => amp[i] * apShape(t - tAct[i], apd[i], P.tauUp, tauRep[i], P.plateauSlope),
       TISSUE, TISSUE_NAMES, buildMs: 0,
     };
     model.buildMs = (typeof performance !== 'undefined' ? performance : Date).now() - T0;
@@ -891,20 +1030,341 @@ const HeartModel = (() => {
     return res;
   }
 
-  return { build, selfCheck, DEFAULTS, apShape, TISSUE, TISSUE_NAMES };
+
+  // =====================================================================
+  //  Pathology scenarios – each one only MODIFIES the model; the ECG emerges.
+  //  scenario(key, stage) -> scenario object for build()
+  // =====================================================================
+  const DIR = { ant: [0, 0, 1], inf: [0, -1, 0], lat: [1, 0, 0], post: [0, 0, -1] };
+  const isLVwall = (pt, T) => pt.type === T.LV || pt.type === T.SEP;
+  // coronary territories (outward direction from the LV long axis, patient frame)
+  const REGIONS = {
+    // LAD: anterior wall + anterior septum + anterolateral (diagonal) segment
+    ant: (pt, c) => isLVwall(pt, c.TISSUE) && pt.s < 0.92 && dot(c.radial(pt), c.across(TUNE.antDir)) > TUNE.antCut,
+    // RCA: inferior wall + inferior septum, incl. the inferior apical segment
+    inf: (pt, c) => { const d = dot(c.radial(pt), c.across(DIR.inf)); return isLVwall(pt, c.TISSUE) && (d > TUNE.infCut || (pt.s < TUNE.infApexS && d > TUNE.infApexCut)); },
+    lat: (pt, c) => pt.type === c.TISSUE.LV && pt.s > 0.3 && dot(c.radial(pt), c.across(DIR.lat)) > 0.5,
+    post: (pt, c) => pt.type === c.TISSUE.LV && pt.s > 0.4 && dot(c.radial(pt), c.across(DIR.post)) > 0.5,
+  };
+  const TUNE = {
+    injuryAmp: 0.65,
+    antDir: [0.35, 0.25, 0.9], antCut: 0.42, infCut: 0.5, infApexS: 0.35, infApexCut: 0.0,      // plateau amplitude in the injured (acute transmural) zone
+    injuryApd: -40,       // shorter APD in the acute zone -> hyperacute T
+    subAmp: 0.8, subDepth: 0.4, // subendocardial ischaemia: inner layer, reduced plateau
+    rbbbPurk: 0.5, lbbbPurk: 0.35,
+    avDelay1: 150, wpwDelay: 45, wpwZ: 0.5, lvh: 0.9, lafbSeptal: false,
+  };
+  function scenario(key, stage) {
+    const T = TUNE;
+    switch (key) {
+      case 'rbbb': return { params: { purkScaleR: T.rbbbPurk }, conduction: cs => { cs.blocked.rbb = true; } };
+      case 'lbbb': return { params: { purkScaleL: T.lbbbPurk }, conduction: cs => { cs.blocked.lbb = true; } };
+      case 'lafb': return { conduction: cs => { cs.blocked.anterior = true; if (T.lafbSeptal) cs.blocked.septal = true; } };
+      case 'avb1': return { params: { avDelay: T.avDelay1 } };
+      // left lateral accessory pathway: lateral mitral annulus (leftmost basal LV epicardium) <- nearest left-atrial wall
+      case 'wpw': return { accessory: {
+        v: (pts, nV) => { let b = -1, bx = -Infinity; for (let i = 0; i < nV; i++) { const p = pts[i]; if (p.type === 3 && p.s > 0.85 && p.depth > 0.7 && p.p[0] - 0.3 * Math.abs(p.p[2] + T.wpwZ) > bx) { bx = p.p[0] - 0.3 * Math.abs(p.p[2] + T.wpwZ); b = i; } } return b; },
+        a: (pts, iv, nV) => { let b = -1, bd = Infinity; for (let i = nV; i < pts.length; i++) { if (pts[i].type !== 1) continue; const d = len(sub(pts[i].p, pts[iv].p)); if (d < bd) { bd = d; b = i; } } return b; },
+        delay: T.wpwDelay, radius: 0.6 } };
+      case 'lvh': return { params: { lvWallAdd: T.lvh } };
+      case 'sub': return {
+        tissue: (pt, m, c) => {
+          if (!isLVwall(pt, c.TISSUE) || pt.endoSide !== 'L' || pt.depth > T.subDepth) return;
+          m.amp = T.subAmp; m.zone = 2;
+        },
+      };
+      case 'ant': case 'inf': case 'lat': case 'post': {
+        const inRegion = REGIONS[key];
+        if (stage === 'old') return { tissue: (pt, m, c) => { if (inRegion(pt, c)) { m.blocked = true; m.zone = 1; } } };
+        return { tissue: (pt, m, c) => { if (inRegion(pt, c)) { m.amp = T.injuryAmp; m.apdAdd = T.injuryApd; m.zone = 1; } } };
+      }
+      default: return {};
+    }
+  }
+  const SCENARIO_KEYS = ['normal', 'rbbb', 'lbbb', 'lafb', 'avb1', 'ant', 'inf', 'lat', 'post', 'sub', 'wpw', 'lvh'];
+  const STAGED = ['ant', 'inf', 'lat', 'post'];
+
+  // ---------------- per-lead measurements (shared by all checks) ----------------
+  function leadStats(m) {
+    const { ecg, ev, P } = m;
+    const at = (nm, t) => ecg[nm][clamp(Math.round(t / P.dt), 0, m.nT - 1)];
+    const out = {};
+    const k0 = Math.ceil(ev.qrsOn / P.dt), k1 = Math.floor(ev.qrsOff / P.dt);
+    for (const nm of m.ALL_LEADS) {
+      const b = at(nm, ev.pOn - 10);
+      const q = []; for (let k = k0; k <= k1; k++) q.push(ecg[nm][k] - b);
+      const R = Math.max(0, ...q), S = Math.max(0, ...q.map(v => -v)), kR = q.indexOf(R);
+      // q = the initial negative deflection, read against the level just before the QRS (PR segment; the atrial Ta wave is still running there)
+      const q0 = q[0], qi = q.map(v => v - q0);
+      const kPos = qi.findIndex(v => v > 0.02);
+      const qAmp = Math.max(0, ...qi.slice(0, Math.max(1, kPos < 0 ? qi.length : kPos)).map(v => -v));
+      // initial negative deflection: duration until the trace turns positive again (QS = whole QRS)
+      const kFirst = qi.findIndex(v => Math.abs(v) > 0.03);
+      let qDur = 0, qs = false;
+      if (kFirst >= 0 && qi[kFirst] < 0) {
+        let k = kFirst; while (k < qi.length && qi[k] < 0.02) k++;
+        qDur = k * P.dt; qs = k >= q.length - 1 || R < 0.1;
+      }
+      // terminal negative (S) duration in the second half of the QRS
+      let termS = 0; for (let k = q.length >> 1; k < q.length; k++) if (q[k] < -0.05) termS += P.dt;
+      // positive duration (broad R)
+      let posDur = 0; for (const v of q) if (v > 0.1) posDur += P.dt;
+      // terminal R' (last 40 %) preceded by a notch / S
+      const kT = Math.floor(q.length * 0.6), tail = q.slice(kT), Rp = Math.max(...tail), kRp = kT + tail.indexOf(Rp);
+      const head = q.slice(0, Math.max(1, kRp)), notch = Math.min(...head), kN = head.indexOf(notch);
+      const rFirst = Math.max(0, ...q.slice(0, Math.max(1, kN)));
+      const tw = []; for (let k = Math.ceil((ev.tOn - 10) / P.dt); k <= Math.floor(ev.tEnd / P.dt); k++) tw.push(ecg[nm][k] - b);
+      const tAmp = tw.reduce((a, v) => Math.abs(v) > Math.abs(a) ? v : a, 0);
+      const tArea = tw.reduce((a, v) => a + v, 0) * P.dt;
+      let area = 0; for (const v of q) area += v * P.dt;
+      out[nm] = {
+        R: +R.toFixed(3), S: +S.toFixed(3), q: +qAmp.toFixed(3), qDur: Math.round(qDur), QS: qs, RS: +(R / Math.max(S, 1e-3)).toFixed(2),
+        ST40: +(at(nm, ev.qrsOff + 40) - b).toFixed(3), ST60: +(at(nm, ev.qrsOff + 60) - b).toFixed(3), T: +tAmp.toFixed(3), tArea: +tArea.toFixed(1),
+        termS: Math.round(termS), posDur: Math.round(posDur), Rp: +Rp.toFixed(3), notch: +notch.toFixed(3), r1: +rFirst.toFixed(3), area: +area.toFixed(1),
+      };
+    }
+    let sx = 0, sy = 0;
+    for (let k = k0; k <= k1; k++) { sx += m.H[3 * k]; sy += m.H[3 * k + 1]; }
+    return { L: out, axis: Math.atan2(-sy, sx) * 180 / Math.PI, PR: ev.qrsOn - ev.pOn, QRS: ev.qrsOff - ev.qrsOn, QT: ev.tEnd - ev.qrsOn };
+  }
+
+  // ---------------- per-scenario numeric criteria ----------------
+  function pathoCheck(m, key, stage, ref) {
+    const st = leadStats(m), L = st.L, R0 = ref ? leadStats(ref).L : null;
+    const res = { key, stage: STAGED.includes(key) ? stage : '', checks: [], stats: st };
+    const c = (name, ok, val) => res.checks.push({ name, ok: !!ok, val });
+    const f = v => (+v).toFixed(2);
+    const list = (names, k) => names.map(n => n + ' ' + f(L[n][k])).join(', ');
+    const isQ = n => L[n].QS || L[n].qDur >= 40 || (L[n].q >= 0.25 * Math.max(L[n].R, 0.05) && L[n].q > 0.1);
+    const PR = Math.round(st.PR), QRS = Math.round(st.QRS), ax = Math.round(st.axis);
+    if (key === 'normal' || key === 'avb1') {
+      const sc = selfCheck(m);
+      for (const x of sc.checks) { if (key === 'avb1' && x.name.startsWith('PR ')) continue; res.checks.push(x); }
+      if (key === 'avb1') c('PR > 200 ms', PR > 200, PR);
+    } else if (key === 'rbbb') {
+      c('QRS ≥ 120 ms', QRS >= 120, QRS);
+      c('V1 rSR′ (terminal R′ ≥ 0.15 mV after an S/notch)', L.V1.Rp >= 0.15 && L.V1.notch < L.V1.Rp - 0.15 && L.V1.r1 > 0.02, `r ${f(L.V1.r1)} · S/notch ${f(L.V1.notch)} · R′ ${f(L.V1.Rp)}`);
+      c('wide terminal S in I and V6 (≥ 30 ms)', L.I.termS >= 30 && L.V6.termS >= 30, `I ${L.I.termS} ms · V6 ${L.V6.termS} ms`);
+      c('axis normal (−30…+90°)', ax >= -30 && ax <= 90, ax);
+    } else if (key === 'lbbb') {
+      c('QRS ≥ 120 ms', QRS >= 120, QRS);
+      c('no septal q in I, V5, V6 (< 0.02 mV)', ['I', 'V5', 'V6'].every(n => L[n].q < 0.02), list(['I', 'V5', 'V6'], 'q'));
+      c('broad monophasic R in I, aVL, V5, V6 (R/S ≥ 3, R ≥ 50 ms)', ['I', 'aVL', 'V5', 'V6'].every(n => L[n].RS >= 3 && L[n].posDur >= 50), ['I', 'aVL', 'V5', 'V6'].map(n => `${n} R/S ${L[n].RS} ${L[n].posDur}ms`).join(', '));
+      c('V1: QS or rS with deep S', L.V1.S >= 0.7 && L.V1.S > 4 * L.V1.R, `r ${f(L.V1.R)} S ${f(L.V1.S)}`);
+      // secondary ST-T: opposite to the dominant QRS deflection where it is dominant (V1–V2 negative, aVL/V6 positive);
+      // lead I: T at least flattened (T area < 25 % of normal). V5 is reported but not required (model limitation).
+      const tI0 = R0 ? R0.I.tArea : 30;
+      c('secondary ST-T discordant (V1–V2 ST↑ T↑; aVL, V6 ST↓ T↓; I T flattened)', ['V1', 'V2'].every(n => L[n].ST40 > 0.05 && L[n].T > 0) && ['aVL', 'V6'].every(n => L[n].ST40 < 0 && L[n].T < 0) && L.I.tArea < 0.25 * tI0,
+        ['V1', 'V2', 'aVL', 'V6'].map(n => `${n} ST ${f(L[n].ST40)} T ${f(L[n].T)}`).join(', ') + ` · I T-area ${L.I.tArea} (normal ${tI0}) · V5 T ${f(L.V5.T)}`);
+    } else if (key === 'lafb') {
+      c('QRS < 120 ms', QRS < 120, QRS);
+      c('frontal axis −45…−90°', ax <= -45 && ax >= -90, ax);
+      c('qR in I and aVL', ['I', 'aVL'].every(n => L[n].q > 0.02 && L[n].RS > 1), list(['I', 'aVL'], 'q') + ' · R/S ' + L.I.RS + ' / ' + L.aVL.RS);
+      c('rS in II, III, aVF', ['II', 'III', 'aVF'].every(n => L[n].R > 0.02 && L[n].S > L[n].R), ['II', 'III', 'aVF'].map(n => `${n} r ${f(L[n].R)} S ${f(L[n].S)}`).join(', '));
+    } else if (key === 'wpw') {
+      const delta = Math.round(m.ev.hisV - m.ev.qrsOn);
+      c('PR < 120 ms', PR < 120, PR);
+      c('pre-excitation (delta) ≥ 30 ms', delta >= 30, delta);
+      c('QRS ≥ 110 ms', QRS >= 110, QRS);
+    } else if (key === 'lvh') {
+      const sv = L.V1.S + Math.max(L.V5.R, L.V6.R);
+      c('S V1 + R V5/V6 ≥ 3.5 mV', sv >= 3.5, `${f(L.V1.S)} + ${f(Math.max(L.V5.R, L.V6.R))} = ${f(sv)}`);
+      c('QRS < 120 ms', QRS < 120, QRS);
+    } else if (key === 'sub') {
+      const dep = ['I', 'II', 'V4', 'V5', 'V6'].filter(n => L[n].ST40 <= -0.1);
+      c('ST depression ≥ 0.1 mV in ≥ 4 of I, II, V4–V6', dep.length >= 4, list(['I', 'II', 'V4', 'V5', 'V6'], 'ST40'));
+      c('ST elevation in aVR', L.aVR.ST40 >= 0.1, f(L.aVR.ST40));
+      const el = m.LEAD_NAMES.filter(n => n !== 'aVR' && n !== 'V1' && L[n].ST40 >= 0.1);
+      c('no ST elevation ≥ 0.1 mV elsewhere (except aVR, V1)', el.length === 0, el.join(',') || 'none');
+    } else if (STAGED.includes(key) && stage !== 'old') {
+      const maxEl = m.LEAD_NAMES.reduce((a, n) => L[n].ST40 > L[a].ST40 ? n : a, 'I');
+      if (key === 'ant') {
+        const el = ['V2', 'V3', 'V4'].filter(n => L[n].ST40 >= 0.2);
+        c('ST elevation ≥ 0.2 mV in ≥ 2 of V2–V4', el.length >= 2, list(['V1', 'V2', 'V3', 'V4'], 'ST40'));
+        c('largest ST elevation in V2–V4', ['V2', 'V3', 'V4'].includes(maxEl), maxEl);
+        c('reciprocal ST depression in III or aVF', L.III.ST40 < -0.03 || L.aVF.ST40 < -0.03, list(['III', 'aVF'], 'ST40'));
+      } else if (key === 'inf') {
+        c('ST elevation in II, III, aVF (≥ 0.1 mV)', ['II', 'III', 'aVF'].every(n => L[n].ST40 >= 0.1), list(['II', 'III', 'aVF'], 'ST40'));
+        c('ST elevation III > II', L.III.ST40 > L.II.ST40, `${f(L.III.ST40)} > ${f(L.II.ST40)}`);
+        c('reciprocal ST depression in I and aVL (aVL most)', L.I.ST40 < -0.03 && L.aVL.ST40 < L.I.ST40 && L.aVL.ST40 <= -0.1, list(['I', 'aVL'], 'ST40'));
+      } else if (key === 'lat') {
+        c('ST elevation in I, aVL, V5, V6 (≥ 0.1 mV)', ['I', 'aVL', 'V5', 'V6'].every(n => L[n].ST40 >= 0.1), list(['I', 'aVL', 'V5', 'V6'], 'ST40'));
+        c('reciprocal ST depression in III / aVF', L.III.ST40 <= -0.1 && L.aVF.ST40 < 0, list(['III', 'aVF'], 'ST40'));
+      } else if (key === 'post') {
+        const v13 = ['V1', 'V2', 'V3'];
+        c('ST depression in V1–V3', v13.every(n => L[n].ST40 < -0.05) && v13.some(n => L[n].ST40 <= -0.1), list(v13, 'ST40'));
+        const mn = v13.reduce((a, n) => L[n].ST40 < L[a].ST40 ? n : a, 'V1');
+        c('deepest depression in V2–V3', mn !== 'V1', mn);
+        c('ST elevation in V7–V9 (≥ 0.1 mV in ≥ 2)', ['V7', 'V8', 'V9'].filter(n => L[n].ST40 >= 0.1).length >= 2, list(['V7', 'V8', 'V9'], 'ST40'));
+      }
+    } else if (STAGED.includes(key)) { // old (necrosis): pathological Q in the facing leads, ST near baseline
+      const face = { ant: ['V1', 'V2', 'V3', 'V4'], inf: ['II', 'III', 'aVF'], lat: ['I', 'aVL', 'V5', 'V6'] }[key];
+      if (face) {
+        const need = key === 'inf' ? ['III', 'aVF'].every(isQ) : face.filter(isQ).length >= 2;
+        c('pathological Q (≥ 40 ms or ≥ 25% of R, or QS) in ≥ 2 facing leads', need, face.map(n => `${n} q ${f(L[n].q)}/${L[n].qDur}ms R ${f(L[n].R)}${L[n].QS ? ' QS' : ''}`).join(', '));
+        c('ST back near baseline in facing leads (|ST| < 0.1 mV)', face.every(n => Math.abs(L[n].ST40) < 0.1), list(face, 'ST40'));
+      } else { // posterior: mirror image of Q = tall R in V1–V2
+        const dR = R0 ? L.V1.R - R0.V1.R : 0;
+        c('tall R in V1–V2 (R/S > 1 in V2, or V1 R +0.3 mV vs normal)', L.V2.RS > 1 || dR >= 0.3, `V2 R/S ${L.V2.RS} · V1 R ${f(L.V1.R)} (normal ${R0 ? f(R0.V1.R) : '?'})`);
+        c('pathological Q in V7–V9 (≥ 2)', ['V7', 'V8', 'V9'].filter(isQ).length >= 2, ['V7', 'V8', 'V9'].map(n => `${n} q ${f(L[n].q)}/${L[n].qDur}ms`).join(', '));
+      }
+    }
+    res.pass = res.checks.every(x => x.ok);
+    res.summary = { PR, QRS, QT: Math.round(st.QT), axis: ax };
+    return res;
+  }
+
+  return { build, selfCheck, DEFAULTS, apShape, TISSUE, TISSUE_NAMES, scenario, pathoCheck, leadStats, SCENARIO_KEYS, STAGED, TUNE, REGIONS };
 })();
 /*MODEL-END*/
+// ---------------------------------------------------------------------
+// Scenario texts (Hebrew). The physics of each scenario lives in the model
+// (HeartModel.scenario); here only names, teaching texts and phase-card overrides.
+// Texts follow the course summary chapters ch20–ch23.
+// f(M, st): M = model, st = HeartModel.leadStats(M) (measured on the emergent ECG)
+// ---------------------------------------------------------------------
+const Lt = s => '<span class="ltr">' + s + '</span>';
+const mm = v => Lt(Math.round(v * 10) + ' mm');
+const ms = v => Lt(Math.round(v) + ' ms');
+const INJ_ST = {
+  tag: 'מקטע ST', c: 'c-inj', title: `מקטע ${Lt('ST')} – זרם הפציעה`,
+  text: () => `בלב תקין כל התאים בפלטו באותו מתח, ולכן אין וקטור והקו שטוח. כאן לתאים הפצועים פלטו נמוך יותר (סגול). בין השריר הבריא לאזור הפצוע יש הבדל מתח, והווקטור – <b>זרם הפציעה</b> (זרם הנזק, ${Lt('Current of Injury')}) – מצביע <b>אל האזור הפצוע</b>. לידים שמול האזור רואים אותו מתקרב ← עליית ${Lt('ST')}; לידים מהצד השני רואים אותו מתרחק ← צניחה (תמונת ראי). החץ המקווקו מראה את הווקטור מוגדל ${Lt('×4')}.`,
+};
+const INJ_T = {
+  tag: 'גל T', c: 'c-t', title: `גל ${Lt('T')} – התאים הפצועים מתאוששים מוקדם`,
+  text: () => `לתאים הפצועים פוטנציאל פעולה קצר, ולכן הם מתאוששים לפני השריר הבריא. וקטור ההתאוששות פונה אל האזור הפצוע ← גל ${Lt('T')} גבוה ורחב בלידים שמול האזור (${Lt('T')} היפר-אקוטי, השלב המוקדם של האוטם).`,
+};
+const OLD_Q = {
+  tag: 'QRS', c: 'c-qrs', title: `תחילת ${Lt('QRS')} – "חור חשמלי" ← גל ${Lt('Q')}`,
+  text: () => `האזור הנמקי (אפור) לא עובר דפולריזציה ואין לו וקטורים. האלקטרודה שמול האזור "רואה" דרך החור רק את הדופן הנגדית, שהגל בה מתרחק ממנה ← סטייה שלילית בתחילת ה-${Lt('QRS')}: גל ${Lt('Q')} פתולוגי. גלי ${Lt('Q')} לא נעלמים לעולם ולא מעידים על זמן האוטם.`,
+};
+const OLD_ST = {
+  tag: 'מקטע ST', c: 'ink-2', title: `מקטע ${Lt('ST')} – חזר לקו הבסיס`,
+  text: () => `הצלקת לא מייצרת מתח בכלל (לא מנוחה ולא פלטו), ולכן אין זרם פציעה וה-${Lt('ST')} שטוח. מה שנשאר מהאוטם הוא ה-${Lt('Q')}.`,
+};
+const POST_OLD = {
+  tag: 'QRS', c: 'c-qrs', title: `${Lt('R')} דומיננטי ב-${Lt('V1–V2')} – תמונת הראי של ${Lt('Q')}`,
+  text: () => `הדופן האחורית (אפור) לא מופעלת, ולכן הכוחות שפונים אחורה חסרים. מה שנשאר הוא הדופן הקדמית, שהגל בה מתקרב ל-${Lt('V1–V2')} ← ה-${Lt('S')} מתכווץ וה-${Lt('R')} שולט מלפנים (במקום ${Lt('Q')}), ו-${Lt('Q')} בחיבורים האחוריים ${Lt('V7–V9')}.`,
+};
+const ACUTE_FIELD =`עליית ${Lt('ST')} ← הענף של עליית ${Lt('ST')} בפרוטוקול ${Lt('ACS')}: שקול הפרין, פינוי דחוף, דיווח ושידור אק״ג ליחידת הלב, מדדים כל 5 דקות.`;
+const OLD_FIELD = `גל ${Lt('Q')} לבד מעיד על אוטם שהיה, לא על זמנו. ${Lt('Q')} יחד עם שינויי ${Lt('ST-T')} – אוטם שהתרחש לאחרונה. אק״ג קודם להשוואה עוזר מאוד.`;
 
-// ---------------------------------------------------------------------
-// Scenarios: the normal heart only. Future pathologies plug in here as
-// objects that modify the model (see HeartModel.build docs), e.g.
-//   rbbb:   { conduction: cs => { cs.blocked.rbb = true } }
-//   lafb:   { conduction: cs => { cs.blocked.anterior = true } }
-//   infarct:{ tissue: (pt, mod) => { if (inRegion(pt)) mod.blocked = true } }
-//   wpw:    { extraEdges: m => [[atrialIdx, ventricularIdx, delay]] }
-//   hyperK / ischemia: { tissue: (pt, mod) => { mod.apdAdd = -40 } }
-// ---------------------------------------------------------------------
-const SCENARIOS = { normal: { name: 'לב תקין' } };
+const SCENARIOS = {
+  normal: { name: 'לב תקין', short: 'תקין', group: 0 },
+  rbbb: {
+    name: `חסם ענף ימני (${Lt('RBBB')})`, short: 'RBBB', group: 1, focus: { lead: 'V1', t: 'late' },
+    broken: 'הענף הימני של צרור ההולכה חסום. המחיצה והחדר השמאלי מופעלים כרגיל, אבל החדר הימני מקבל את הגל רק דרך שריר המחיצה – לאט ובאיחור (בתלת-ממד: הענף הימני מסומן ב-✕ אדום).',
+    ecg: (M, st) => [`${Lt('QRS')} רחב – מעל ${Lt('0.12')} שנ' (במודל ${ms(st.QRS)})`, `${Lt('V1–V2')}: ${Lt('rSR′')} – ${Lt('R')} שני (${Lt('R′')}) בסוף ה-${Lt('QRS')}`, `${Lt('S')} רחב ועמוק בלידים השמאליים: ${Lt('I, aVL, V5–V6')}`, `${Lt('T')} הפוך ב-${Lt('V1–V2')} – שינוי משני, לא איסכמיה`],
+    leads: `${Lt('V1–V2')} (ה-${Lt('R′')}), ${Lt('I, aVL, V5–V6')} (ה-${Lt('S')} הרחב)`,
+    field: `${Lt('RBBB')} במטופל בריא יכול להיות ממצא ידוע ו"שקט". בשילוב חסם נוסף (דו-ענפי או תלת-ענפי) – ניטור רציף והיערכות לברדיקרדיה משמעותית.`,
+    phases: {
+      qrs: { title: `אמצע ${Lt('QRS')} – החדר השמאלי כרגיל`, text: () => `הענף השמאלי תקין, ולכן החדר השמאלי מופעל בזמן ובמהירות, כמו בלב תקין. הווקטור פונה שמאלה ← ${Lt('R')} ב-${Lt('I')} וב-${Lt('V6')}, ${Lt('S')} ב-${Lt('V1')}. החדר הימני עדיין כמעט לא הופעל.` },
+      r: { title: `שיא ${Lt('R')} – החדר השמאלי`, text: () => `רוב שריר החדר השמאלי מופעל. הגל לחדר הימני מתקדם לאט בשריר, בלי ה"כביש המהיר" של סיבי פורקינייה.` },
+      late: { title: `סוף ${Lt('QRS')} – החדר הימני מופעל באיחור`, text: () => `החדר השמאלי כבר סיים. עכשיו נשאר רק החדר הימני, והגל בו זוחל ימינה וקדימה. הווקטור המאוחר פונה ימינה-קדימה, אל ${Lt('V1')} ← ${Lt('R′')} ב-${Lt('V1')}, ו-${Lt('S')} רחב ב-${Lt('I')} וב-${Lt('V6')}. כך ה-${Lt('QRS')} מתארך.` },
+    },
+  },
+  lbbb: {
+    name: `חסם ענף שמאלי (${Lt('LBBB')})`, short: 'LBBB', group: 1, focus: { lead: 'V6', t: 'r' },
+    broken: 'הענף השמאלי (שני הסעיפים) חסום. הגל יורד רק בענף הימני: המחיצה מופעלת מימין לשמאל, והחדר השמאלי מופעל באיחור ולאט, דרך השריר.',
+    ecg: (M, st) => [`${Lt('QRS')} רחב – מעל ${Lt('0.12')} שנ' (במודל ${ms(st.QRS)})`, `${Lt('I, aVL, V5–V6')}: ${Lt('R')} רחב ומחורץ (צורת ${Lt('M')}), בלי ${Lt('q')} מחיצתי`, `${Lt('V1–V3')}: ${Lt('S')} עמוק ורחב (${Lt('QS')} או ${Lt('rS')})`, `${Lt('ST')} ו-${Lt('T')} הפוכים לכיוון ה-${Lt('QRS')} (${Lt('discordant')}) – שינוי משני`],
+    leads: `${Lt('I, aVL, V5–V6')}; ${Lt('V1–V3')} (גלי ${Lt('S')} עמוקים)`,
+    field: `${Lt('LBBB')} חדש עם תמונה של ${Lt('ACS')} מטופל בפרוטוקול כמו עליית ${Lt('ST')}: שקול הפרין, פינוי דחוף, דיווח ליחידת הלב. ב-${Lt('LBBB')} ה-${Lt('ST')} "עקום" מלכתחילה – מחפשים קריטריוני ${Lt('Sgarbossa')} ומבקשים אק״ג קודם.`,
+    note: `במודל ה-${Lt('T')} ב-${Lt('V5')} נשאר חיובי וב-${Lt('I')} כמעט שטוח; בלב אמיתי הוא בדרך כלל הפוך גם שם.`,
+    phases: {
+      sep: { title: `תחילת ${Lt('QRS')} – המחיצה מופעלת מימין לשמאל`, text: () => `הענף השמאלי חסום, ולכן הגל מגיע ראשון לצד הימני של המחיצה וחוצה אותה מימין לשמאל – הפוך מהלב התקין. הווקטור הראשון פונה שמאלה ← אין ${Lt('q')} מחיצתי ב-${Lt('I, aVL, V5–V6')}, ואין ${Lt('r')} (או רק ${Lt('r')} זעיר) ב-${Lt('V1')}.` },
+      qrs: { title: 'החדר השמאלי מופעל לאט, דרך השריר', text: () => `בלי ענף שמאלי אין "כביש מהיר" לחדר השמאלי. הגל עובר ממחיצה לדופן הצדית בשריר עצמו, לאט. הווקטור פונה שמאלה ואחורה לאורך זמן רב ← ${Lt('R')} רחב ב-${Lt('I')} וב-${Lt('V6')}, ${Lt('S')} עמוק ורחב ב-${Lt('V1')}.` },
+      r: { title: `${Lt('R')} רחב ומחורץ`, text: () => `החריץ (צורת ${Lt('M')}) נוצר כשהגל עובר מהמחיצה לדופן החופשית של החדר השמאלי. הדופן הצדית-אחורית מופעלת אחרונה.` },
+      late: { title: `סוף ${Lt('QRS')} – הדופן הצדית של החדר השמאלי`, text: () => `האזורים האחרונים הם הדופן הצדית-אחורית של החדר השמאלי. ה-${Lt('QRS')} ארוך כי כל ההפעלה של החדר השמאלי עברה בשריר האיטי.` },
+      st: { title: `${Lt('ST')} – שינוי משני`, text: () => `מי שהופעל אחרון נמצא עדיין "צעיר" בפוטנציאל הפעולה שלו. ההבדלים בזמני ההפעלה יוצרים הבדלי מתח כבר במקטע ${Lt('ST')}: הוא נוטה הפוך לכיוון ה-${Lt('QRS')} – עולה ב-${Lt('V1–V3')}, יורד ב-${Lt('aVL, V6')}.` },
+      tw: { title: `גל ${Lt('T')} הפוך ל-${Lt('QRS')} (${Lt('discordant')})`, text: () => `האזורים שהופעלו אחרונים (החדר השמאלי) מתאוששים אחרונים. הווקטור מצביע מהם אל החדר הימני שכבר התאושש – ימינה וקדימה, הפוך ל-${Lt('QRS')} ← ${Lt('T')} חיובי ב-${Lt('V1–V3')}, שלילי ב-${Lt('aVL')} וב-${Lt('V6')}.` },
+    },
+  },
+  avb1: {
+    name: `חסם ${Lt('AV')} דרגה ראשונה`, short: `${Lt('AV')} דרגה 1`, group: 1, focus: { lead: 'II', t: 'pr' },
+    broken: `ההולכה בצומת ${Lt('AV')} איטית מהרגיל – ההשהיה בצומת ארוכה יותר – אבל כל גל ${Lt('P')} עובר לחדרים.`,
+    ecg: (M, st) => [`${Lt('PR')} מעל ${Lt('0.2')} שנ' – יותר ממשבצת גדולה (במודל ${ms(st.PR)})`, `ההתארכות קבועה בכל מחזור, וכל ${Lt('P')} מוביל ל-${Lt('QRS')}`, `${Lt('QRS')} צר ותקין – ההפעלה בחדרים עצמם תקינה`],
+    leads: `כל ליד קצב, למשל ${Lt('II')}`,
+    field: `"מודדים בעין": ${Lt('PR')} שחורג ממשבצת גדולה = דרגה 1. חסמי דרגה 2 ו-3 (וונקבך, מוביץ, חסם מלא) נראים רק ברצועה של כמה פעימות – לא בפעימה האחת של המודל.`,
+    phases: {
+      pr: { title: `מקטע ${Lt('PR')} ארוך – השהיה מוגברת בצומת ${Lt('AV')}`, dyn: true, text: (M, t, EV) => `העליות כבר מופעלות, אבל הדחף "תקוע" בצומת ${Lt('AV')} כ-${ms(M.P.avDelay)} (בלב התקין במודל ${ms(95)}). ${t >= EV.his ? 'עכשיו הוא סוף-סוף עובר בצרור היס ובענפים.' : 'הקו שטוח – מערכת ההולכה זעירה מכדי להיראות באק״ג.'} ברצועת ההשוואה רואים שה-${Lt('QRS')} פשוט מגיע מאוחר יותר.` },
+    },
+  },
+  ant: {
+    name: `אוטם קדמי (${Lt('LAD')})`, short: 'קדמי', group: 2, staged: true, focus: { acute: { lead: 'V2', t: 'st', view: 'left' }, old: { lead: 'V2', t: 'q', view: 'left' } },
+    zone: { acute: 'אזור הפציעה – קדמי', old: 'צלקת – קדמי' },
+    broken: { acute: `חסימה של הענף הקדמי-יורד (${Lt('LAD')}): הדופן הקדמית והמחיצה הקדמית פצועות לכל עובי הדופן. לתאים הפצועים פלטו נמוך וקצר (צבע סגול במקטע ${Lt('ST')}).`, old: `אוטם קדמי ישן: הדופן הקדמית והמחיצה הקדמית הפכו לצלקת (אפור) – לא מופעלות ולא מוליכות.` },
+    ecg: { acute: (M, st) => [`עליית ${Lt('ST')} בלידים החזיים ${Lt('V1–V4')} (במודל: ${mm(st.L.V2.ST40)} ב-${Lt('V2')})`, `${Lt('T')} גבוה (היפר-אקוטי) מול האזור`, `צניחה רציפרוקלית קטנה ב-${Lt('III')} / ${Lt('aVF')}`], old: (M, st) => [`גלי ${Lt('Q')} / ${Lt('QS')} בחיבורים החזיים ${Lt('V1–V4')} (במודל בעיקר ${Lt('V3–V4')}; ב-${Lt('V1–V2')} נשאר ${Lt('r')} קטן)`, `${Lt('ST')} חזר לקו הבסיס`] },
+    leads: `${Lt('V1–V2')} (מחיצה), ${Lt('V3–V4')} (קדמי)`, recip: { acute: `${Lt('III, aVF')}` },
+    field: { acute: ACUTE_FIELD, old: OLD_FIELD },
+    phases: { acute: { st: INJ_ST, tw: INJ_T }, old: { sep: OLD_Q, qrs: OLD_Q, r: OLD_Q, st: OLD_ST } },
+  },
+  inf: {
+    name: `אוטם תחתון (${Lt('RCA')})`, short: 'תחתון', group: 2, staged: true, focus: { acute: { lead: 'III', t: 'st' }, old: { lead: 'III', t: 'q' } },
+    zone: { acute: 'אזור הפציעה – תחתון', old: 'צלקת – תחתון' },
+    broken: { acute: `חסימה של העורק הכלילי הימני (${Lt('RCA')}): הדופן התחתונה (והחלק התחתון של המחיצה) פצועה לכל עובייה.`, old: `אוטם תחתון ישן: הדופן התחתונה הפכה לצלקת שלא מופעלת.` },
+    ecg: { acute: (M, st) => [`עליית ${Lt('ST')} ב-${Lt('II, III, aVF')} – ב-${Lt('III')} יותר מאשר ב-${Lt('II')}`, `צניחה רציפרוקלית ב-${Lt('I')} וב-${Lt('aVL')} (הכי בולטת ב-${Lt('aVL')})`, `במודל גם צניחה ב-${Lt('V1–V5')} (העמוקה ב-${Lt('V2–V3')}): הדופן התחתונה פונה גם אחורה, ותחתון ואחורי באים לא פעם יחד`], old: (M, st) => [`גלי ${Lt('Q')} ב-${Lt('III')} וב-${Lt('aVF')}`, `${Lt('ST')} בקו הבסיס`] },
+    leads: `${Lt('II, III, aVF')}`, recip: { acute: `${Lt('I, aVL')} (${Lt('Respect aVL')})` },
+    field: { acute: `אוטם תחתון = לחשוב על חדר ימין: בצע אק״ג ימני (${Lt('V4R')}) לפני ניטרט. אוטם ימני הוא התווית נגד לניטרטים ולמורפיום. ` + ACUTE_FIELD, old: OLD_FIELD },
+    phases: { acute: { st: INJ_ST, tw: INJ_T }, old: { sep: OLD_Q, qrs: OLD_Q, r: OLD_Q, st: OLD_ST } },
+  },
+  lat: {
+    name: `אוטם צדי (${Lt('Cx')})`, short: 'צדי', group: 2, staged: true, focus: { acute: { lead: 'aVL', t: 'st' }, old: { lead: 'I', t: 'q' } },
+    zone: { acute: 'אזור הפציעה – צדי', old: 'צלקת – צדי' },
+    broken: { acute: `חסימה של העורק העוטף (${Lt('Circumflex')}): הדופן הצדית של החדר השמאלי פצועה.`, old: `אוטם צדי ישן: הדופן הצדית הפכה לצלקת.` },
+    ecg: { acute: (M, st) => [`עליית ${Lt('ST')} ב-${Lt('I, aVL, V5–V6')}`, `צניחה רציפרוקלית ב-${Lt('III')} וב-${Lt('aVF')}`], old: (M, st) => [`גלי ${Lt('Q')} ב-${Lt('I')} וב-${Lt('aVL')} (במודל ${Lt('QS')}); ב-${Lt('V5–V6')} ה-${Lt('R')} קטן מאוד`, `${Lt('ST')} בקו הבסיס`] },
+    leads: `${Lt('I, aVL, V5–V6')}`, recip: { acute: `${Lt('III, aVF')}` },
+    field: { acute: ACUTE_FIELD, old: OLD_FIELD },
+    phases: { acute: { st: INJ_ST, tw: INJ_T }, old: { sep: OLD_Q, qrs: OLD_Q, r: OLD_Q, st: OLD_ST } },
+  },
+  post: {
+    name: 'אוטם אחורי', short: 'אחורי', group: 2, staged: true, focus: { acute: { lead: 'V2', t: 'st', view: 'left' }, old: { lead: 'V2', t: 'r', view: 'left' } },
+    zone: { acute: 'אזור הפציעה – אחורי', old: 'צלקת – אחורי' },
+    broken: { acute: `פציעה בדופן האחורית של החדר השמאלי (בדרך כלל ${Lt('RCA')} או אחד מסעיפיו). אף ליד מה-12 לא מסתכל עליה ישירות.`, old: `אוטם אחורי ישן: הדופן האחורית הפכה לצלקת.` },
+    ecg: { acute: (M, st) => [`צניחת ${Lt('ST')} ב-${Lt('V1–V3')} (העמוקה ב-${Lt('V2–V3')}) – תמונת ראי`, `בחיבורים האחוריים ${Lt('V7–V9')}: עליית ${Lt('ST')} (במודל: ${mm(st.L.V9.ST40)} ב-${Lt('V9')})`, `מבחן המראה: הפכו את ${Lt('V1–V2')} – הצניחה הופכת לעלייה`], old: (M, st) => [`${Lt('R')} דומיננטי ב-${Lt('V1–V2')} (${Lt('R/S > 1')}; במודל ה-${Lt('S')} מתכווץ מאוד, וב-${Lt('V2')} כמעט נעלם) – "היפוכו של ${Lt('Q')}"`, `גלי ${Lt('Q')} בחיבורים האחוריים ${Lt('V7–V9')}`] },
+    leads: `${Lt('V1–V3')} (במראה), ${Lt('V7–V9')} (ישירות)`, recip: { acute: `${Lt('V1–V3')} הם בעצמם תמונת הראי` },
+    field: { acute: `בחשד לאוטם אחורי – אק״ג בחיבורים ${Lt('V7–V9')} (לפי הפרוטוקול). תמיד לבדוק ב-${Lt('V1–V2')}: צניחות ${Lt('ST')} וגלי ${Lt('R')} גדולים = אוטם אחורי. ` + ACUTE_FIELD, old: OLD_FIELD },
+    phases: {
+      acute: { st: { ...INJ_ST, text: () => INJ_ST.text() + ` כאן האזור מאחור: ${Lt('V7–V9')} רואים את הווקטור מתקרב (עלייה), ו-${Lt('V1–V3')} שמלפנים רואים אותו מתרחק (צניחה).` }, tw: INJ_T },
+      old: { sep: POST_OLD, qrs: POST_OLD, r: POST_OLD, late: POST_OLD, st: OLD_ST },
+    },
+  },
+  sub: {
+    name: 'איסכמיה תת-אנדוקרדיאלית', short: 'תת-אנדוקרד', group: 2, focus: { lead: 'V5', t: 'st' },
+    zone: { acute: 'אזור איסכמי – תת-אנדוקרד' },
+    broken: `איסכמיה בשכבה הפנימית (תת-אנדוקרד) של החדר השמאלי, לכל ההיקף (תעוקה / אוטם בלי עליית ${Lt('ST')} – ${Lt('NSTEMI')}). הפלטו של התאים בשכבה הפנימית נמוך.`,
+    ecg: (M, st) => [`צניחת ${Lt('ST')} שטוחה בלידים רבים: ${Lt('I, II, V4–V6')} (במודל: ${mm(st.L.V5.ST40)} ב-${Lt('V5')})`, `עליית ${Lt('ST')} ב-${Lt('aVR')}`, `אין עליית ${Lt('ST')} באף ליד אחר`],
+    leads: `${Lt('I, II, V4–V6')} (צניחה), ${Lt('aVR')} (עלייה)`,
+    field: `צניחת ${Lt('ST')} משמעותית (בלידים עם ${Lt('QRS')} חיובי) = פגיעה בזרימה הכלילית עד שיוכח אחרת – לא "רק איסכמיה". בפרוטוקול ${Lt('ACS')} בלי עליית ${Lt('ST')}: פינוי דחוף, מדדים כל ${Lt('5–10')} דקות, שקול דיווח למלר״ד.`,
+    phases: {
+      st: { tag: 'מקטע ST', c: 'c-inj', title: `מקטע ${Lt('ST')} – זרם הפציעה פונה אל חלל החדר`, text: () => `הפלטו נמוך רק בשכבה הפנימית. בכל דופן הווקטור מצביע מהשכבה החיצונית הבריאה אל השכבה הפנימית – כלומר אל חלל החדר. הווקטורים מכל הכיוונים מתקזזים, ונשאר וקטור קטן שפונה אל בסיס הלב (למעלה, ימינה ואחורה – אל ${Lt('aVR')}) ← צניחת ${Lt('ST')} ברוב הלידים ועלייה ב-${Lt('aVR')}. החץ המקווקו מוגדל ${Lt('×4')}.` },
+    },
+  },
+  wpw: {
+    name: `${Lt('WPW')} – מסלול עוקף`, short: 'WPW', group: 3, focus: { lead: 'II', t: 'delta' },
+    broken: `מסלול הולכה נוסף – אלומת קנט (${Lt('Bundle of Kent')}) – מחבר את העלייה השמאלית לחדר השמאלי ועוקף את ההשהיה בצומת ${Lt('AV')}. חלק מהחדר מופעל מוקדם, דרך השריר (לאט).`,
+    ecg: (M, st) => [`${Lt('PR')} קצר – פחות מ-${Lt('0.12')} שנ' (במודל ${ms(st.PR)})`, `גל דלתא: עלייה הדרגתית ומשופעת בתחילת ה-${Lt('QRS')} (במודל ${ms(M.ev.hisV - M.ev.qrsOn)} של הפעלה מוקדמת)`, `${Lt('QRS')} רחב (במודל ${ms(st.QRS)})`, `שינויי ${Lt('ST-T')} משניים`],
+    leads: `${Lt('PR')} וגל הדלתא בכל ליד; כאן בולט ב-${Lt('II, III, aVF')} וב-${Lt('V1–V4')}`,
+    field: `בטכיקרדיה עם ${Lt('WPW')} לפי הפרוטוקול: אדנוזין ברשימת "אין לתת" ב-${Lt('WPW')}; בטכיקרדיה צרה לא סדירה עם ${Lt('WPW')} אסור לתת איקקור ואמיודרון.`,
+    phases: {
+      pr: { title: `מקטע ${Lt('PR')} קצר`, dyn: true, text: (M, t, EV) => `הגל בעלייה השמאלית מגיע לקצה העלייתי של המסלול העוקף ועובר בו ישר לחדר – בלי ההשהיה של צומת ${Lt('AV')}. בינתיים הדחף "הרגיל" עדיין מחכה בצומת.` },
+      delta: { tag: 'גל דלתא', c: 'c-acc', title: 'גל דלתא – הפעלה מוקדמת דרך המסלול העוקף', text: () => `החדר מתחיל להיות מופעל מהבסיס הצדי של החדר השמאלי, איפה שהמסלול נכנס. אין שם סיבי פורקינייה, ולכן הגל זוחל בשריר לאט ← עלייה איטית ומשופעת בתחילת ה-${Lt('QRS')}: גל דלתא. ה-${Lt('PR')} קצר כי ההשהיה בצומת נעקפה.` },
+      sep: { title: 'הגל הרגיל מגיע ומצטרף', text: () => `עכשיו מגיע גם הדחף שעבר בצומת ${Lt('AV')} ובצרור היס. שני גלים מפעילים את החדרים יחד (פיוז׳ן): החלק המוקדם דרך המסלול העוקף, והשאר בדרך הרגילה המהירה.` },
+      qrs: { title: 'שני גלים יחד', text: () => `חלק מהחדר כבר מופעל מהמסלול העוקף, והשאר מופעל דרך מערכת ההולכה. ה-${Lt('QRS')} רחב כי ההפעלה התחילה מוקדם.` },
+    },
+  },
+  lvh: {
+    name: `עיבוי חדר שמאל (${Lt('LVH')})`, short: 'LVH', group: 3, focus: { lead: 'V1', t: 'r' },
+    broken: `דופן החדר השמאלי מעובה (עומס כרוני: יתר לחץ דם, היצרות אאורטלית). יותר שריר = יותר מתח חשמלי, וההפעלה דרך הדופן העבה נמשכת מעט יותר.`,
+    ecg: (M, st) => [`${Lt('S')} עמוק ב-${Lt('V1')} + ${Lt('R')} גבוה ב-${Lt('V5')} (או ${Lt('V6')}) מעל ${Lt('35 mm')} (במודל ${mm(st.L.V1.S + Math.max(st.L.V5.R, st.L.V6.R))})`, `${Lt('QRS')} עדיין צר (במודל ${ms(st.QRS)})`],
+    leads: `${Lt('V1')} (${Lt('S')}), ${Lt('V5–V6')} (${Lt('R')})`,
+    field: `${Lt('LVH')} עם ${Lt('Strain')} (צניחת ${Lt('ST')} ו-${Lt('T')} הפוך לא סימטרי ב-${Lt('V5–V6')}) נראה כמו איסכמיה – ${Lt('Pseudo MI')}: בקשו אק״ג קודם, בדקו קליניקה, וחפשו צניחות רציפרוקליות.`,
+    note: `תבנית ה-${Lt('Strain')} לא מודלה כאן – רק העיבוי.`,
+    phases: {
+      r: { title: `שיא ${Lt('R')} – יותר שריר, וקטור גדול יותר`, text: () => `הדופן העבה של החדר השמאלי מייצרת וקטור גדול בהרבה מהרגיל. הוא פונה שמאלה ואחורה ← ${Lt('R')} גבוה מאוד ב-${Lt('V5–V6')} ו-${Lt('S')} עמוק מאוד ב-${Lt('V1')}. השוו לרישום התקין (האפור).` },
+    },
+  },
+};
+const SCN_GROUPS = ['תקין', 'חסמי הולכה', 'איסכמיה ואוטם', 'אחר'];
 </script>
 
 <script type="module">
@@ -921,34 +1381,54 @@ const fmtmV = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(2) + ' mV';
 
 // ===================================================== model
 const T0 = performance.now();
-const scenarioKey = 'normal';
-const M = HeartModel.build(SCENARIOS[scenarioKey]);
-const CHECK = HeartModel.selfCheck(M);
-const EV = M.ev, BEAT = M.P.beatLen;
-console.log('[heart-vector] model build', Math.round(M.buildMs), 'ms, points', M.n);
-console.log('[heart-vector] 12-lead self-check', CHECK.pass ? 'PASS' : 'FAIL', JSON.stringify(CHECK.summary));
-CHECK.checks.forEach(c => console.log(`[heart-vector]   ${c.ok ? 'PASS' : 'FAIL'}  ${c.name}  (${c.val})`));
+// the normal heart is always built (reference for the "compare" ghost and for the fixed ECG gain)
+const NORMAL = HeartModel.build({});
+const NORMAL_CHECK = HeartModel.selfCheck(NORMAL);
+console.log('[heart-vector] model build', Math.round(NORMAL.buildMs), 'ms, points', NORMAL.n);
+console.log('[heart-vector] 12-lead self-check', NORMAL_CHECK.pass ? 'PASS' : 'FAIL', JSON.stringify(NORMAL_CHECK.summary));
+NORMAL_CHECK.checks.forEach(c => console.log(`[heart-vector]   ${c.ok ? 'PASS' : 'FAIL'}  ${c.name}  (${c.val})`));
+let M = NORMAL, EV = M.ev, CHECK = HeartModel.pathoCheck(NORMAL, 'normal', '', NORMAL), STATS = CHECK.stats;
+const BEAT = NORMAL.P.beatLen;
+// scenario models are built lazily (first time a scenario is selected) and cached
+const MODEL_CACHE = {};
+const scnId = (k, st) => k + (SCENARIOS[k] && SCENARIOS[k].staged ? ':' + st : '');
+function getModel(k, st) {
+  if (k === 'normal') return NORMAL;
+  const id = scnId(k, st);
+  if (!MODEL_CACHE[id]) {
+    const sc = HeartModel.scenario(k, st);
+    sc.params = Object.assign({ gain: NORMAL.gain }, sc.params || {}); // same gain as the normal heart -> voltages comparable
+    MODEL_CACHE[id] = HeartModel.build(sc);
+  }
+  return MODEL_CACHE[id];
+}
+const SCN_KEYS = Object.keys(SCENARIOS);
 
 // ===================================================== state + URL hash
-const LEADS = M.LEAD_NAMES;
+const ALL_LEADS = NORMAL.ALL_LEADS, POST_LEADS = ['V7', 'V8', 'V9'];
+let LEADS = NORMAL.LEAD_NAMES.slice();
 const S = {
   t: EV.rPeak, lead: 'II', view: 'front', playing: false, speed: 0.25, loop: true,
   cs: true, arrows: true, vec: true, axis: true, vloop: true, labels: true, opacity: 0.38,
-  clip: 'off', clipAt: 0,
+  clip: 'off', clipAt: 0, scn: 'normal', stage: 'acute', compare: true,
 };
 const NAMED_T = () => ({
-  p: EV.pPeak, pr: (EV.pOff + EV.qrsOn) / 2, q: (EV.qrsOn + EV.septalEnd) / 2 + 1, qrs: (EV.qrsOn + EV.septalEnd) / 2 + 1,
-  r: EV.rPeak, s: (EV.rPeak + EV.qrsOff) / 2 + 4, st: (EV.qrsOff + EV.tOn) / 2, t: EV.tPeak, tp: (EV.tEnd + BEAT) / 2, rest: 20,
+  p: EV.pPeak, pr: Math.min((EV.pOff + EV.qrsOn) / 2, EV.qrsOn - 2), q: (EV.qrsOn + EV.septalEnd) / 2 + 1, qrs: (EV.qrsOn + EV.septalEnd) / 2 + 1,
+  r: EV.rPeak, s: (EV.rPeak + EV.qrsOff) / 2 + 4, late: EV.qrsOff - Math.min(18, (EV.qrsOff - EV.rPeak) / 3), st: (EV.qrsOff + EV.tOn) / 2, t: EV.tPeak, tp: (EV.tEnd + BEAT) / 2, rest: 20,
+  delta: isFinite(EV.accV) ? EV.qrsOn + 0.6 * (EV.hisV - EV.qrsOn) : (EV.qrsOn + EV.septalEnd) / 2,
 });
 function parseHash() {
   const h = new URLSearchParams(location.hash.replace(/^#/, ''));
   const out = {};
   if (h.has('t')) {
     const raw = h.get('t').toLowerCase(), nt = NAMED_T();
-    if (raw in nt) out.t = nt[raw];
+    if (raw in nt) { out.t = nt[raw]; out.tName = raw; } // named times are re-resolved after the scenario is applied (its event times differ)
     else { const v = parseFloat(raw); if (isFinite(v)) out.t = v <= 2 ? v * 1000 : v; }
   }
-  if (h.has('lead')) { const l = LEADS.find(x => x.toLowerCase() === h.get('lead').toLowerCase()); if (l) out.lead = l; }
+  if (h.has('lead')) { const l = ALL_LEADS.find(x => x.toLowerCase() === h.get('lead').toLowerCase()); if (l) out.lead = l; }
+  if (h.has('scn') && SCN_KEYS.includes(h.get('scn'))) out.scn = h.get('scn');
+  if (h.has('stage') && ['acute', 'old'].includes(h.get('stage'))) out.stage = h.get('stage');
+  if (h.has('compare')) out.compare = h.get('compare') !== '0';
   if (h.has('view') && ['front', 'left', 'inferior', 'posterior', 'lead', 'cut'].includes(h.get('view'))) out.view = h.get('view');
   if (h.has('clip') && ['off', 'frontal', 'transverse', 'long'].includes(h.get('clip'))) out.clip = h.get('clip');
   if (h.has('clipAt')) out.clipAt = clamp(parseFloat(h.get('clipAt')) || 0, -8, 8);
@@ -961,6 +1441,7 @@ function parseHash() {
   out.debug = h.get('debug') === '1';
   out.solo = h.get('solo') === '1';
   out.selftest = h.get('selftest') === '1';
+  out.allchecks = h.get('allchecks') === '1';
   return out;
 }
 let hashTimer = 0;
@@ -969,6 +1450,7 @@ function writeHash() {
   hashTimer = setTimeout(() => {
     const h = new URLSearchParams(location.hash.replace(/^#/, ''));
     h.set('t', (S.t / 1000).toFixed(3)); h.set('lead', S.lead); h.set('view', S.view);
+    if (S.scn !== 'normal') { h.set('scn', S.scn); if (SCENARIOS[S.scn].staged) h.set('stage', S.stage); else h.delete('stage'); } else { h.delete('scn'); h.delete('stage'); }
     if (S.clip !== 'off') { h.set('clip', S.clip); h.set('clipAt', S.clipAt.toFixed(1)); } else { h.delete('clip'); h.delete('clipAt'); }
     history.replaceState(null, '', '#' + h.toString());
   }, 350);
@@ -991,7 +1473,8 @@ const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(
 let C = {};
 function readColors() {
   const names = ['bg', 'surface', 'surface-2', 'ink', 'ink-2', 'ink-3', 'line', 'paper', 'grid-minor', 'grid-major', 'trace', 'cursor',
-    'c-rest', 'c-depol', 'c-plateau', 'c-repol', 'c-vec', 'c-pos', 'c-neg', 'c-axis', 'c-p', 'c-qrs', 'c-t', 'c-cs', 'accent'];
+    'c-rest', 'c-depol', 'c-plateau', 'c-repol', 'c-vec', 'c-pos', 'c-neg', 'c-axis', 'c-p', 'c-qrs', 'c-t', 'c-cs', 'accent',
+    'c-zone', 'c-scar', 'c-inj', 'c-ghost', 'c-cut', 'c-acc', 'accent-soft'];
   for (const n of names) C[n] = cssVar('--' + n);
   C.dark = document.documentElement.getAttribute('data-theme') === 'dark' ||
     (document.documentElement.getAttribute('data-theme') !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
@@ -1026,13 +1509,18 @@ const clipMats = [];   // materials affected by the section plane
 const V3 = (a) => new THREE.Vector3(a[0], a[1], a[2]);
 
 // ---------- myocardial surface (marching cubes on the model SDF) ----------
-let E = 0; for (let i = 0; i < M.n; i++) E = Math.max(E, Math.abs(M.pos[3 * i]), Math.abs(M.pos[3 * i + 1]), Math.abs(M.pos[3 * i + 2]));
-E += 1.2;
+let E = 0;
 const RES = 84;
 const surfMat = new THREE.MeshStandardMaterial({ vertexColors: true, transparent: true, opacity: S.opacity, roughness: 0.52, metalness: 0.0, side: THREE.DoubleSide, depthWrite: false });
 clipMats.push(surfMat);
-let surface, surfNear, surfColors;
-{
+let surface = null, surfNear, surfColors, surfHatch, surfGeoKey = null;
+function buildSurface() { // rebuilt only when the geometry changes (LVH)
+  const gkey = String(M.P.lvWallAdd || 0);
+  if (gkey === surfGeoKey) return;
+  surfGeoKey = gkey;
+  if (surface) { scene.remove(surface); surface.geometry.dispose(); }
+  E = 0; for (let i = 0; i < M.n; i++) E = Math.max(E, Math.abs(M.pos[3 * i]), Math.abs(M.pos[3 * i + 1]), Math.abs(M.pos[3 * i + 2]));
+  E += 1.2;
   const mc = new MarchingCubes(RES, surfMat, false, false, 400000);
   mc.isolation = 0;
   const half = RES / 2, f = mc.field;
@@ -1086,6 +1574,9 @@ let surface, surfNear, surfColors;
       }
     surfNear[v] = best;
   }
+  // diagonal stripes used to hatch an infarct / ischaemic zone on the surface
+  surfHatch = new Uint8Array(nv);
+  for (let v = 0; v < nv; v++) { const q = (P[3 * v] * 0.8 + P[3 * v + 1] * 0.55 + P[3 * v + 2] * 0.35) * 1.7; surfHatch[v] = (q - Math.floor(q)) < 0.5 ? 1 : 0; }
   surface = new THREE.Mesh(g, surfMat);
   surface.renderOrder = 2;
   scene.add(surface);
@@ -1096,12 +1587,21 @@ let surface, surfNear, surfColors;
 const ptGeo = new THREE.IcosahedronGeometry(0.105, 0);
 const ptMat = new THREE.MeshStandardMaterial({ roughness: 0.6, metalness: 0 });
 clipMats.push(ptMat);
-const points = new THREE.InstancedMesh(ptGeo, ptMat, M.n);
-points.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-points.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(M.n * 3), 3);
-points.instanceColor.setUsage(THREE.DynamicDrawUsage);
-points.frustumCulled = false;
-scene.add(points);
+let points = null;
+function buildPoints() {
+  if (points && points.userData.n === M.n) return;
+  if (points) { scene.remove(points); points.dispose(); }
+  points = new THREE.InstancedMesh(ptGeo, ptMat, M.n); points.userData.n = M.n;
+  points.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  points.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(M.n * 3), 3);
+  points.instanceColor.setUsage(THREE.DynamicDrawUsage);
+  points.frustumCulled = false;
+  scene.add(points);
+  // fixed random subsample (so arrows do not flicker): about 1 point in 3 can carry an arrow
+  arrowEligible = new Uint8Array(M.n);
+  let sd = 7; for (let i = 0; i < M.n; i++) { sd = (sd * 1103515245 + 12345) & 0x7fffffff; arrowEligible[i] = (sd % 1000) < (M.pts[i].type <= 1 ? 480 : 230) ? 1 : 0; }
+  STATE = new Uint8Array(M.n);
+}
 
 // ---------- local wavefront arrows ----------
 function arrowGeometry(len, shaftR, headR, headL) {
@@ -1123,9 +1623,7 @@ arrows.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
 arrows.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(ARROW_MAX * 3), 3);
 arrows.frustumCulled = false; arrows.renderOrder = 3;
 scene.add(arrows);
-// fixed random subsample (so arrows don't flicker): ~1 point in 3 can carry an arrow
-const arrowEligible = new Uint8Array(M.n);
-{ let s = 7; for (let i = 0; i < M.n; i++) { s = (s * 1103515245 + 12345) & 0x7fffffff; arrowEligible[i] = (s % 1000) < (M.pts[i].type <= 1 ? 480 : 230) ? 1 : 0; } }
+let arrowEligible = new Uint8Array(0);
 
 // ---------- great vessels (orientation only) ----------
 const vesselMat = new THREE.MeshStandardMaterial({ color: 0xc8c1b7, roughness: 0.45, metalness: 0.05, transparent: true, opacity: 0.6, depthWrite: false });
@@ -1174,28 +1672,43 @@ const addv = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 
 // ---------- conduction system ----------
 const csGroup = new THREE.Group(); scene.add(csGroup);
-const csSegs = [];
-const csMatFor = () => { const m = new THREE.MeshBasicMaterial({ color: 0xffffff }); clipMats.push(m); return m; };
-for (const s of M.tree) {
-  if (s.kind === 'avn') continue;
-  const a = V3(s.a), b = V3(s.b);
-  const r = s.kind === 'his' ? 0.13 : s.kind === 'bach' ? 0.1 : 0.085;
-  const g = new THREE.TubeGeometry(new THREE.LineCurve3(a, b), 2, r, 8, false);
-  const m = new THREE.Mesh(g, csMatFor()); m.renderOrder = 4;
-  csGroup.add(m); csSegs.push({ seg: s, mesh: m });
-}
+let csSegs = [];
+const csMats = [];
+const csMatFor = () => { const m = new THREE.MeshBasicMaterial({ color: 0xffffff }); clipMats.push(m); csMats.push(m); return m; };
 const nodeGeo = new THREE.SphereGeometry(0.34, 20, 14);
-const saMesh = new THREE.Mesh(nodeGeo, csMatFor()); saMesh.position.copy(V3(M.pts[M.iSA].p)); csGroup.add(saMesh);
-const avMesh = new THREE.Mesh(nodeGeo, csMatFor()); avMesh.position.copy(V3(M.pts[M.iAVN].p)); csGroup.add(avMesh);
-// Purkinje network = shortest-path tree inside the subendocardial Purkinje layer
-const pkPos = new Float32Array(M.purkSegs.length * 6), pkCol = new Float32Array(M.purkSegs.length * 8);
-M.purkSegs.forEach(([a, b], k) => { pkPos.set([M.pos[3 * a], M.pos[3 * a + 1], M.pos[3 * a + 2], M.pos[3 * b], M.pos[3 * b + 1], M.pos[3 * b + 2]], 6 * k); });
-const pkGeo = new THREE.BufferGeometry();
-pkGeo.setAttribute('position', new THREE.BufferAttribute(pkPos, 3));
-pkGeo.setAttribute('color', new THREE.BufferAttribute(pkCol, 4));
+let saMesh, avMesh, pkPos, pkCol, pkGeo, purkLines, cutMarks = [], cutMeshes = [];
 const pkMat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 1, depthWrite: false });
 clipMats.push(pkMat);
-const purkLines = new THREE.LineSegments(pkGeo, pkMat); purkLines.renderOrder = 4; csGroup.add(purkLines);
+function buildCS() {
+  for (const o of csGroup.children.slice()) { csGroup.remove(o); o.traverse(x => { if (x.geometry && x.geometry !== nodeGeo) x.geometry.dispose(); }); }
+  for (const m of csMats.splice(0)) { m.dispose(); const k = clipMats.indexOf(m); if (k >= 0) clipMats.splice(k, 1); }
+  csSegs = []; cutMarks = []; cutMeshes = [];
+  for (const s of M.tree) {
+    if (s.kind === 'avn') continue;
+    const a = V3(s.a), b = V3(s.b);
+    const r = s.kind === 'acc' ? 0.22 : s.kind === 'his' ? 0.13 : s.kind === 'bach' ? 0.1 : 0.085;
+    const g = new THREE.TubeGeometry(new THREE.LineCurve3(a, b), 2, r, 8, false);
+    const m = new THREE.Mesh(g, csMatFor()); m.renderOrder = 4;
+    csGroup.add(m); csSegs.push({ seg: s, mesh: m });
+    if (s.cutHere) cutMarks.push({ p: a.clone().lerp(b, 0.42), kind: s.kind });
+  }
+  // a cut bundle: a red cross ("break") at the site of the block
+  for (const ck of cutMarks) {
+    const mk = new THREE.Group();
+    const mat = csMatFor(); mat.depthTest = false; mat.transparent = true;
+    for (const ang of [Math.PI / 4, -Math.PI / 4]) { const bar = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.22, 0.22), mat); bar.rotation.z = ang; bar.renderOrder = 6; mk.add(bar); }
+    mk.position.copy(ck.p); mk.renderOrder = 6; csGroup.add(mk); cutMeshes.push(mk);
+  }
+  saMesh = new THREE.Mesh(nodeGeo, csMatFor()); saMesh.position.copy(V3(M.pts[M.iSA].p)); csGroup.add(saMesh);
+  avMesh = new THREE.Mesh(nodeGeo, csMatFor()); avMesh.position.copy(V3(M.pts[M.iAVN].p)); csGroup.add(avMesh);
+  // Purkinje network = shortest-path tree inside the subendocardial Purkinje layer
+  pkPos = new Float32Array(M.purkSegs.length * 6); pkCol = new Float32Array(M.purkSegs.length * 8);
+  M.purkSegs.forEach(([a, b], k) => { pkPos.set([M.pos[3 * a], M.pos[3 * a + 1], M.pos[3 * a + 2], M.pos[3 * b], M.pos[3 * b + 1], M.pos[3 * b + 2]], 6 * k); });
+  pkGeo = new THREE.BufferGeometry();
+  pkGeo.setAttribute('position', new THREE.BufferAttribute(pkPos, 3));
+  pkGeo.setAttribute('color', new THREE.BufferAttribute(pkCol, 4));
+  purkLines = new THREE.LineSegments(pkGeo, pkMat); purkLines.renderOrder = 4; csGroup.add(purkLines);
+}
 
 // ---------- heart vector, VCG loop, lead axis, projection ----------
 const VS = 4.6; // cm per mV for drawing H
@@ -1229,8 +1742,12 @@ const centerDot = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 12), new THR
 centerDot.renderOrder = 11; scene.add(centerDot);
 // VCG loop
 const loopPos = new Float32Array(M.nT * 3), loopCol = new Float32Array(M.nT * 3);
-for (let k = 0; k < M.nT; k++) { loopPos[3 * k] = M.H[3 * k] * VS; loopPos[3 * k + 1] = M.H[3 * k + 1] * VS; loopPos[3 * k + 2] = M.H[3 * k + 2] * VS; }
 const loopGeo = new THREE.BufferGeometry();
+function fillLoop() {
+  for (let k = 0; k < M.nT; k++) { loopPos[3 * k] = M.H[3 * k] * VS; loopPos[3 * k + 1] = M.H[3 * k + 1] * VS; loopPos[3 * k + 2] = M.H[3 * k + 2] * VS; }
+  if (loopGeo.attributes.position) { loopGeo.attributes.position.needsUpdate = true; loopGeo.computeBoundingSphere(); }
+}
+fillLoop();
 loopGeo.setAttribute('position', new THREE.BufferAttribute(loopPos, 3));
 loopGeo.setAttribute('color', new THREE.BufferAttribute(loopCol, 3));
 const loopFaintMat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.22, depthTest: false });
@@ -1249,10 +1766,14 @@ const dropLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new TH
 dropLine.renderOrder = 9; scene.add(dropLine);
 const electrodeGeo = new THREE.SphereGeometry(0.42, 18, 12);
 const electrodes = {};
-for (const v of ['V1', 'V2', 'V3', 'V4', 'V5', 'V6']) {
+for (const v of ['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9']) {
   const m = new THREE.Mesh(electrodeGeo, new THREE.MeshBasicMaterial({ color: 0x17914a, depthTest: false, transparent: true }));
   m.position.copy(V3(M.electrodes[v])); m.renderOrder = 7; axisGroup.add(m); electrodes[v] = m;
 }
+// injury current during the ST segment, magnified x4 so it is visible next to the QRS-sized heart vector
+const INJ_GAIN = 4;
+const injArrow = makeArrow(0xa05ad8, 0.1, 0.36, 0.9); injArrow.userData.mat.opacity = 0.8; scene.add(injArrow);
+let injLabel = null;
 
 // ---------- text sprites ----------
 function textSprite(text, { color = '#222', bg = null, size = 44, weight = 600, scale = 1, pad = 14 } = {}) {
@@ -1299,6 +1820,52 @@ function buildLabels() {
   av.position.copy(V3(M.pts[M.iAVN].p)).add(new THREE.Vector3(-0.6, -1.2, 1.6)); av.userData.n = new THREE.Vector3(0, -0.2, 1).normalize(); labelGroup.add(av);
   labelGroup.userData.cs = [sa, av];
 }
+// scenario labels: anchored at the zone centroid / cut site / pathway, pushed outward a little
+const scnLabelGroup = new THREE.Group(); scene.add(scnLabelGroup);
+function zoneCentroid(pred) {
+  const c = [0, 0, 0]; let k = 0;
+  for (let i = 0; i < M.n; i++) if (pred(i)) { c[0] += M.pos[3 * i]; c[1] += M.pos[3 * i + 1]; c[2] += M.pos[3 * i + 2]; k++; }
+  return k ? new THREE.Vector3(c[0] / k, c[1] / k, c[2] / k) : null;
+}
+function buildScenarioLabels() {
+  scnLabelGroup.clear();
+  injLabel = null;
+  const sc = SCENARIOS[S.scn]; if (!sc || S.scn === 'normal') return;
+  const k = labelScale(), bgL = C.dark ? 'rgba(20,22,26,0.82)' : 'rgba(255,255,255,0.88)';
+  const add = (txt, pos, color, out) => {
+    const sp = textSprite(txt, { color, bg: bgL, size: 26, weight: 700, scale: k });
+    const o = (out || pos.clone()).clone().normalize();
+    sp.position.copy(pos).add(o.multiplyScalar(3.4)); sp.userData.n = (out || pos).clone().normalize(); sp.userData.anchor = pos.clone();
+    scnLabelGroup.add(sp); return sp;
+  };
+  if (sc.zone) {
+    const c = zoneCentroid(i => M.zone[i] > 0);
+    if (c) {
+      const txt = sc.zone[sc.staged ? S.stage : 'acute'];
+      // outward direction from the LV long axis through the zone
+      const ax = V3(M.F.e3), rel = c.clone(), along = ax.clone().multiplyScalar(rel.dot(ax)), out = rel.sub(along);
+      if (out.length() < 0.5) out.copy(c);
+      const zs = add(txt, c, C.dark ? '#d9c4ff' : '#4d2a91', out);
+      zs.position.y -= 1.8; // keep clear of the injury-current label at the arrow tip
+    }
+  }
+  for (const ck of cutMarks) {
+    const txt = ck.kind === 'rbb' ? 'חסימה בענף הימני' : (S.scn === 'lbbb' ? 'חסימה בענף השמאלי' : 'חסימה בסעיף');
+    const off = ck.kind === 'rbb' ? new THREE.Vector3(-1.2, -2.4, 1.6) : new THREE.Vector3(1.6, -2.2, 1.6);
+    const sp = add(txt, ck.p, C['c-cut'], off);
+    sp.position.copy(ck.p).add(off);
+  }
+  if (M.acc) {
+    const a = V3(M.pts[M.acc.ia].p), b = V3(M.pts[M.acc.iv].p), mid = a.clone().lerp(b, 0.5);
+    add('מסלול עוקף (קנט)', mid, C['c-acc'], mid.clone().setY(mid.y + 0.5));
+  }
+  if (S.scn === 'lvh') add('דופן מעובה', new THREE.Vector3(5.2, -2.6, 0.4), C.dark ? '#ffd2c8' : '#8a2b22', new THREE.Vector3(1, -0.3, 0.2));
+  if (S.scn === 'avb1') add('השהיה ארוכה בצומת AV', V3(M.pts[M.iAVN].p), C.dark ? '#ffe39a' : '#7a5a00', new THREE.Vector3(-0.4, -0.6, 1));
+  if (sc.zone && !(sc.staged && S.stage === 'old')) {
+    injLabel = textSprite(`זרם הפציעה ×${INJ_GAIN}`, { color: '#fff', bg: C['c-inj'], size: 24, weight: 700, scale: k * 0.95 });
+    injLabel.renderOrder = 13; scene.add(injLabel); scnLabelGroup.add(injLabel); injLabel.userData.fixed = true;
+  }
+}
 let axisPlus, axisMinus;
 function buildAxisLabels() {
   axisLabelGroup.clear();
@@ -1319,7 +1886,10 @@ function themeColors() {
     restPt: col3(C.dark ? '#7a4a46' : '#c79892'), vec: col3(C['c-vec']), pos: col3(C['c-pos']), neg: col3(C['c-neg']),
     axis: col3(C['c-axis']), p: col3(C['c-p']), qrs: col3(C['c-qrs']), t: col3(C['c-t']), cs: col3(C['c-cs']),
     csDim: col3(C.dark ? '#7d6a2c' : '#b79a4a'), csHot: col3(C.dark ? '#fff6c2' : '#fff1a8'), muscle: col3(C.dark ? '#9c4a42' : '#b9574c'),
+    zone: col3(C['c-zone']), scar: col3(C['c-scar']), inj: col3(C['c-inj']), cut: col3(C['c-cut']), acc: col3(C['c-acc']),
+    blocked: col3(C.dark ? '#55504b' : '#b5aea6'), scarSurf: col3(C.dark ? '#8a847e' : '#7d766f'),
   };
+  injArrow.userData.mat.color.copy(COL.inj);
   vecArrow.userData.mat.color.copy(COL.vec); tipDot.material.color.copy(COL.vec);
   centerDot.material.color.set(C.dark ? '#e8e4de' : '#2a2420');
   axisPosMat.color.copy(COL.axis); axisNegMat.color.copy(COL.axis);
@@ -1331,11 +1901,11 @@ function themeColors() {
     loopCol[3 * k] = c.r; loopCol[3 * k + 1] = c.g; loopCol[3 * k + 2] = c.b;
   }
   loopGeo.attributes.color.needsUpdate = true;
-  buildLabels(); buildAxisLabels();
+  buildLabels(); buildAxisLabels(); buildScenarioLabels();
 }
 
 // ===================================================== per-frame update of the 3D state
-const STATE = new Uint8Array(M.n);   // 0 rest, 1 depolarizing, 2 plateau, 3 repolarizing
+let STATE = new Uint8Array(0);   // 0 rest, 1 depolarizing, 2 plateau, 3 repolarizing
 const tmpM = new THREE.Matrix4(), tmpQ = new THREE.Quaternion(), tmpS = new THREE.Vector3(), tmpP = new THREE.Vector3(), tmpD = new THREE.Vector3();
 const UPSTROKE = 9; // ms window shown as "depolarizing now"
 function tissueState(i, t) {
@@ -1354,9 +1924,10 @@ function updateTissue(t) {
   for (let i = 0; i < M.n; i++) {
     const st = tissueState(i, t); STATE[i] = st;
     let c, s;
-    if (st === 0) { c = COL.restPt; s = 0.6; }
+    if (M.dead[i]) { c = COL.scar; s = 0.75; }
+    else if (st === 0) { c = COL.restPt; s = 0.6; }
     else if (st === 1) { c = COL.depol; s = 1.7; }
-    else if (st === 2) { c = COL.plateau; s = 1.0; }
+    else if (st === 2) { if (M.amp[i] < 0.99) { c = COL.inj; s = 1.15; } else { c = COL.plateau; s = 1.0; } }
     else { c = COL.repol; s = 1.35; }
     col[3 * i] = c.r; col[3 * i + 1] = c.g; col[3 * i + 2] = c.b;
     const o = 16 * i;
@@ -1385,11 +1956,18 @@ function updateTissue(t) {
   arrows.instanceMatrix.needsUpdate = true; arrows.instanceColor.needsUpdate = true;
   // surface colour = muscle tone tinted by the state of the nearest tissue
   const W = [0, 0.85, 0.5, 0.6], SC = [null, COL.depol, COL.plateau, COL.repol];
-  const base = COL.muscle;
+  const base = COL.muscle, hasZone = S.scn !== 'normal' && M.zone;
   for (let v = 0; v < surfNear.length; v++) {
-    const st = STATE[surfNear[v]];
-    if (st === 0) { surfColors[3 * v] = base.r; surfColors[3 * v + 1] = base.g; surfColors[3 * v + 2] = base.b; }
-    else { const w = W[st], c = SC[st]; surfColors[3 * v] = base.r + (c.r - base.r) * w; surfColors[3 * v + 1] = base.g + (c.g - base.g) * w; surfColors[3 * v + 2] = base.b + (c.b - base.b) * w; }
+    const i = surfNear[v], st = STATE[i];
+    let r, g, b;
+    if (hasZone && M.dead[i]) { const h = surfHatch[v] ? 1 : 0.72, c = COL.scarSurf; r = base.r + (c.r - base.r) * h; g = base.g + (c.g - base.g) * h; b = base.b + (c.b - base.b) * h; }
+    else {
+      const sc2 = (st === 2 && M.amp[i] < 0.99) ? COL.inj : SC[st];
+      if (st === 0) { r = base.r; g = base.g; b = base.b; }
+      else { const w = W[st]; r = base.r + (sc2.r - base.r) * w; g = base.g + (sc2.g - base.g) * w; b = base.b + (sc2.b - base.b) * w; }
+      if (hasZone && M.zone[i] && surfHatch[v]) { const z = COL.zone, w = 0.55; r += (z.r - r) * w; g += (z.g - g) * w; b += (z.b - b) * w; }
+    }
+    surfColors[3 * v] = r; surfColors[3 * v + 1] = g; surfColors[3 * v + 2] = b;
   }
   surface.geometry.attributes.color.needsUpdate = true;
 }
@@ -1398,9 +1976,12 @@ function updateConduction(t) {
   if (labelGroup.userData.cs) labelGroup.userData.cs.forEach(s => s.visible = S.cs && S.labels);
   if (!S.cs) return;
   const hot = COL.csHot, dim = COL.csDim, act = COL.cs;
+  for (const cm of cutMeshes) cm.children[0].material.color.copy(COL.cut);
   for (const { seg, mesh } of csSegs) {
     let c;
-    if (seg.kind === 'bach') c = (t >= EV.pOn + 8 && t <= EV.pOff) ? hot : (t > EV.pOff && t < EV.pOff + 150) ? act : dim;
+    if (seg.blocked) c = COL.blocked;
+    else if (seg.kind === 'acc') c = (t >= seg.ta && t < seg.tb + 14) ? hot : COL.acc;
+    else if (seg.kind === 'bach') c = (t >= EV.pOn + 8 && t <= EV.pOff) ? hot : (t > EV.pOff && t < EV.pOff + 150) ? act : dim;
     else if (t < seg.ta) c = dim;
     else if (t < seg.tb + 12) c = hot;
     else if (t < EV.qrsOff + 60) c = act;
@@ -1414,6 +1995,7 @@ function updateConduction(t) {
   avMesh.scale.setScalar(avActive ? 1.25 + 0.25 * Math.sin((t - EV.avIn) / 7) : 1);
   for (let k = 0; k < M.purkSegs.length; k++) {
     const b = M.purkSegs[k][1], ta = M.tAct[b];
+    if (!isFinite(ta)) { pkCol.set([dim.r, dim.g, dim.b, 0.15, dim.r, dim.g, dim.b, 0.15], 8 * k); continue; }
     const [c, a] = t < ta ? [dim, 0.22] : t < ta + 14 ? [hot, 1] : t < EV.qrsOff + 40 ? [act, 0.55] : [dim, 0.22];
     pkCol.set([c.r, c.g, c.b, a, c.r, c.g, c.b, a], 8 * k);
   }
@@ -1447,7 +2029,17 @@ function updateVectors(t) {
   const negEnd = Lu.clone().multiplyScalar(isV ? -6.5 : -9.5);
   axisPos.geometry.setFromPoints([ORIGIN, plusEnd]); axisNeg.geometry.setFromPoints([ORIGIN, negEnd]); axisNeg.computeLineDistances();
   const fromLead = S.view === 'lead' && !camTarget;
-  for (const v in electrodes) { electrodes[v].visible = isV && !(fromLead && v === S.lead); electrodes[v].material.opacity = v === S.lead ? 1 : 0.28; electrodes[v].scale.setScalar(v === S.lead ? 1 : 0.7); }
+  const postOn = S.scn === 'post' || POST_LEADS.includes(S.lead);
+  for (const v in electrodes) { electrodes[v].visible = isV && !(fromLead && v === S.lead) && (postOn || !POST_LEADS.includes(v)); electrodes[v].material.opacity = v === S.lead ? 1 : 0.28; electrodes[v].scale.setScalar(v === S.lead ? 1 : 0.7); }
+  // injury current (ST segment of an injury scenario): magnified copy of H, so its direction is easy to see
+  const inST = injLabel && t >= EV.qrsOff + 4 && t < EV.tOn;
+  injArrow.visible = !!inST && S.vec;
+  if (injLabel) injLabel.visible = injArrow.visible && S.labels;
+  if (injArrow.visible) {
+    const Lg = Math.min(mag * VS * INJ_GAIN, 9.5);
+    setArrow(injArrow, ORIGIN, tmpH, Lg);
+    if (injLabel) { injLabel.position.copy(tmpH).normalize().multiplyScalar(Lg + 1.2); keepInView(injLabel); }
+  }
   if (axisPlus) {
     axisPlus.position.copy(plusEnd).add(Lu.clone().multiplyScalar(isV ? 1.5 : 1.3));
     axisMinus.position.copy(negEnd).add(Lu.clone().multiplyScalar(-0.9));
@@ -1544,11 +2136,17 @@ function drawCompass() {
 // ===================================================== ECG drawing (main strip + 12 minis)
 const strip = $('strip'), sctx = strip.getContext('2d');
 const RANGES = {};
-for (const nm of LEADS) {
-  const a = M.ecg[nm]; let lo = 0, hi = 0; for (const v of a) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
-  RANGES[nm] = [Math.min(-0.5, lo - 0.2), Math.max(0.6, hi + 0.25)];
+let GLOBAL_RANGE = [-1, 1];
+const ghostOn = () => S.compare && S.scn !== 'normal';
+function computeRanges() {
+  for (const nm of ALL_LEADS) {
+    let lo = 0, hi = 0;
+    for (const src of ghostOn() ? [M, NORMAL] : [M]) for (const v of src.ecg[nm]) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
+    RANGES[nm] = [Math.min(-0.5, lo - 0.2), Math.max(0.6, hi + 0.25)];
+  }
+  GLOBAL_RANGE = [Math.min(...LEADS.map(n => RANGES[n][0])), Math.max(...LEADS.map(n => RANGES[n][1]))];
 }
-const GLOBAL_RANGE = [Math.min(...LEADS.map(n => RANGES[n][0])), Math.max(...LEADS.map(n => RANGES[n][1]))];
+computeRanges();
 function drawPaper(ctx, x0, y0, w, h, tToX, vToY, lo, hi, majorOnly) {
   ctx.fillStyle = C.paper; ctx.fillRect(x0, y0, w, h);
   const pxPerMsX = (tToX(40) - tToX(0)), pxPerTenth = vToY(0) - vToY(0.1);
@@ -1562,8 +2160,8 @@ function drawPaper(ctx, x0, y0, w, h, tToX, vToY, lo, hi, majorOnly) {
   if (!majorOnly && pxPerMsX >= 3 && pxPerTenth >= 3) drawLines(40, 0.1, C['grid-minor'], 1);
   drawLines(200, 0.5, C['grid-major'], 1);
 }
-function drawTrace(ctx, nm, tToX, vToY, lw, color) {
-  const a = M.ecg[nm];
+function drawTrace(ctx, nm, tToX, vToY, lw, color, src = M) {
+  const a = src.ecg[nm];
   ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
   ctx.beginPath();
   for (let k = 0; k < a.length; k++) { const x = tToX(k * M.P.dt), y = vToY(a[k]); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
@@ -1599,7 +2197,9 @@ function renderStripBase() {
   const y0 = g.vToY(0), y1 = g.vToY(1), xc = 6, wcal = Math.max(10, g.tToX(200) - g.tToX(0)) * 0.5;
   ctx.moveTo(xc, y0); ctx.lineTo(xc + 4, y0); ctx.lineTo(xc + 4, y1); ctx.lineTo(xc + 4 + Math.min(wcal, 14), y1); ctx.lineTo(xc + 4 + Math.min(wcal, 14), y0); ctx.lineTo(g.padL, y0); ctx.stroke();
   ctx.fillStyle = C['ink-3']; ctx.font = '10px "IBM Plex Sans Hebrew", Arial'; ctx.textAlign = 'left'; ctx.fillText('1 mV', 3, Math.max(y1 - 5, g.top + 9)); // keep the label inside the plot when the pulse exceeds the lead's range
+  if (ghostOn()) drawTrace(ctx, S.lead, g.tToX, g.vToY, 2.2, C['c-ghost'], NORMAL); // the normal heart, for comparison
   drawTrace(ctx, S.lead, g.tToX, g.vToY, 2, C.trace);
+  if (ghostOn()) { ctx.font = '10px "IBM Plex Sans Hebrew", Arial'; ctx.fillStyle = C['ink-3']; ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic'; ctx.direction = 'rtl'; ctx.fillText('אפור: לב תקין', g.W - g.padR - 4, g.top + g.plotH - 4); ctx.direction = 'ltr'; }
   // time ticks
   ctx.fillStyle = C['ink-3']; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
   for (let t = 0; t <= BEAT; t += 200) ctx.fillText(t + ' ms', clamp(g.tToX(t), g.padL + 14, g.W - 20), g.Hh - g.bot + 3);
@@ -1623,6 +2223,13 @@ function drawStrip(t) {
     if (active) { sctx.globalAlpha = 0.08; sctx.fillStyle = b.c; sctx.fillRect(xa, g.top, xb - xa, g.plotH); }
   }
   sctx.globalAlpha = 1;
+  if (isFinite(EV.accV)) { // WPW: mark the delta wave (pre-excitation through the accessory pathway)
+    const xa = g.tToX(EV.qrsOn), xb = g.tToX(EV.hisV), act = t >= EV.qrsOn && t < EV.hisV;
+    sctx.strokeStyle = C['c-acc']; sctx.fillStyle = C['c-acc']; sctx.lineWidth = act ? 3 : 2; sctx.globalAlpha = act ? 1 : 0.75;
+    sctx.beginPath(); sctx.moveTo(xa, g.top + 4); sctx.lineTo(xb, g.top + 4); sctx.stroke();
+    sctx.font = '600 11px "IBM Plex Sans Hebrew", Arial'; sctx.textAlign = 'center'; sctx.fillText('Δ', (xa + xb) / 2, g.top + 13);
+    sctx.globalAlpha = 1;
+  }
   // cursor
   const x = g.tToX(t), k = clamp(Math.round(t / M.P.dt), 0, M.nT - 1), v = M.ecg[S.lead][k];
   sctx.strokeStyle = C.cursor; sctx.lineWidth = 2; sctx.beginPath(); sctx.moveTo(x, g.top - 4); sctx.lineTo(x, g.top + g.plotH); sctx.stroke();
@@ -1641,11 +2248,12 @@ function drawStrip(t) {
 const minis = {};
 function buildMinis() {
   const grid = $('miniGrid'); grid.innerHTML = '';
-  for (const nm of LEADS) {
+  for (const nm of ALL_LEADS) {
     const c = document.createElement('canvas'); c.className = 'mini'; c.tabIndex = 0; c.setAttribute('role', 'button');
     c.setAttribute('aria-label', 'בחר חיבור ' + nm); c.dataset.lead = nm;
     c.addEventListener('click', () => selectLead(nm));
     c.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectLead(nm); } });
+    if (POST_LEADS.includes(nm)) c.hidden = true;
     grid.appendChild(c); minis[nm] = { c, cache: null };
   }
 }
@@ -1659,6 +2267,7 @@ function drawMini(nm, t) {
     const off = document.createElement('canvas'); off.width = c.width; off.height = c.height;
     const ctx = off.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     drawPaper(ctx, 0, 0, W, Hh, tToX, vToY, lo, hi, true);
+    if (ghostOn()) drawTrace(ctx, nm, tToX, vToY, 1.5, C['c-ghost'], NORMAL);
     drawTrace(ctx, nm, tToX, vToY, 1.3, C.trace);
     ctx.font = '700 11px "IBM Plex Sans Hebrew", Arial'; ctx.fillStyle = C.ink; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
     ctx.fillText(nm, 5, 3);
@@ -1679,7 +2288,8 @@ function phaseAt(t) {
   if (t < pMid) return 'p1';
   if (t < EV.pOff) return 'p2';
   if (t < EV.qrsOn) return 'pr';
-  if (t < EV.septalEnd) return 'sep';
+  if (isFinite(EV.accV) && t < EV.hisV) return 'delta';
+  if (t < (isFinite(EV.accV) ? EV.hisV + 12 : EV.septalEnd)) return 'sep';
   if (t < EV.rPeak - 6) return 'qrs';
   if (t <= EV.rPeak + 6) return 'r';
   if (t < EV.qrsOff) return 'late';
@@ -1710,13 +2320,23 @@ const PH = {
     text: () => `לתאי האפיקרד (השכבה החיצונית של הדופן) פוטנציאל פעולה קצר יותר, ולכן הם מתאוששים ראשונים – למרות שהופעלו אחרונים; גם הקודקוד מתאושש לפני הבסיס. גל ההתאוששות נע בכיוון ההפוך להפעלה, וגם הסימן החשמלי שלו הפוך – שני ה"היפוכים" מבטלים זה את זה, ולכן ${ltr('T')} חיובי כמו ה-${ltr('QRS')} (ושלילי ב-${ltr('aVR')}). הווקטור מצביע מהאזורים שעדיין בפלטו אל האזורים שכבר התאוששו.` },
   tp: { tag: 'מקטע TP', c: 'ink-3', title: 'מנוחה חשמלית עד הפעימה הבאה',
     text: () => `כל התאים חזרו למתח המנוחה. אין וקטור; הלב ממתין לירי הבא של הקוצב הסינוסי.` },
+  delta: { tag: 'גל דלתא', c: 'c-acc', title: 'הפעלה מוקדמת', text: () => '' },
 };
+// scenario-specific phase cards override the normal ones (only the phases that change)
+const pickStage = v => (v && typeof v === 'object' && !Array.isArray(v) && ('acute' in v || 'old' in v)) ? (v[S.stage] || v.acute) : v;
+function phaseDef(ph) {
+  const sc = SCENARIOS[S.scn], base = PH[ph];
+  const ov = sc && sc.phases ? (sc.staged ? sc.phases[S.stage] : sc.phases) : null;
+  const o = ov && ov[ph];
+  if (!o) return base;
+  return { tag: o.tag || base.tag, c: o.c || base.c, title: o.title, dyn: !!o.dyn, text: t => o.text(M, t, EV), scn: true };
+}
 let lastPhase = '', lastLeadHTML = '';
 function updateExplain(t, vec) {
-  const ph = phaseAt(t), P = PH[ph];
+  const ph = phaseAt(t), P = phaseDef(ph);
   if (ph !== lastPhase || explainDirty) {
     $('phaseTag').textContent = P.tag; $('phasePill').style.color = C[P.c] || C['ink-2'];
-    $('phaseTitle').innerHTML = P.title; $('phaseText').innerHTML = P.text(t);
+    $('phaseTitle').innerHTML = P.title + (P.scn ? `<span class="scn-pill">${SCENARIOS[S.scn].short}</span>` : ''); $('phaseText').innerHTML = P.text(t);
     lastPhase = ph; explainDirty = false;
   } else if (P.dyn) $('phaseText').innerHTML = P.text(t);
   const { mag, proj, val } = vec, L = S.lead, aug = L.startsWith('aV');
@@ -1742,7 +2362,7 @@ function resize() {
   const w = canvas.clientWidth, h = canvas.clientHeight;
   if (COL.rest && labelScale() !== lastLabelScale) { lastLabelScale = labelScale(); buildLabels(); }
   renderer.setSize(w, h, false); camera.aspect = w / Math.max(1, h); camera.updateProjectionMatrix();
-  stripCache = null; for (const nm of LEADS) minis[nm].cache = null;
+  stripCache = null; for (const nm of ALL_LEADS) minis[nm].cache = null;
   dirty = true;
 }
 function update() {
@@ -1751,8 +2371,10 @@ function update() {
   updateConduction(t);
   const vec = updateVectors(t);
   labelGroup.visible = S.labels;
+  scnLabelGroup.visible = S.labels;
   if (S.labels) { // fade labels whose side of the heart faces away from the camera
     const cd = camera.position.clone().normalize();
+    for (const sp of scnLabelGroup.children) { if (sp.userData.fixed) continue; sp.material.opacity = clamp(0.45 + (sp.userData.n.dot(cd) + 0.3) * 1.2, 0.35, 1); keepInView(sp); }
     for (const sp of labelGroup.children) {
       if (sp.userData.n) sp.material.opacity = clamp(0.2 + (sp.userData.n.dot(cd) + 0.25) * 1.3, 0.12, 1);
       if (S.clip !== 'off' && clipPlane.distanceToPoint(sp.userData.anchor || sp.position) < 0) sp.material.opacity = 0;
@@ -1764,7 +2386,7 @@ function update() {
   drawStrip(t);
   for (const nm of LEADS) drawMini(nm, t);
   updateExplain(t, vec);
-  $('hud').innerHTML = `${ltr(Math.round(t) + ' ms')} · ${PH[phaseAt(t)].tag}` + (S.view === 'lead' ? ` · מבט מהקוטב החיובי של ${ltr(S.lead)}: וקטור שמתקרב אליכם = סטייה חיובית` : '');
+  $('hud').innerHTML = `${ltr(Math.round(t) + ' ms')} · ${phaseDef(phaseAt(t)).tag}` + (S.view === 'lead' ? ` · מבט מהקוטב החיובי של ${ltr(S.lead)}: וקטור שמתקרב אליכם = סטייה חיובית` : '');
 }
 let lastNow = performance.now();
 function loop(now) {
@@ -1797,8 +2419,9 @@ function selectLead(nm) {
 }
 function buildLeadButtons() {
   const g = $('leadGrid');
-  for (const nm of LEADS) {
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'leadbtn'; b.textContent = nm; b.dataset.lead = nm;
+  for (const nm of ALL_LEADS) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'leadbtn' + (POST_LEADS.includes(nm) ? ' post' : ''); b.textContent = nm; b.dataset.lead = nm;
+    if (POST_LEADS.includes(nm)) { b.hidden = true; b.title = 'חיבור אחורי (בגב, בגובה V6)'; }
     b.setAttribute('aria-pressed', String(nm === S.lead)); b.addEventListener('click', () => selectLead(nm)); g.appendChild(b);
   }
 }
@@ -1840,7 +2463,7 @@ $('themeBtn').addEventListener('click', () => {
   applyTheme(next); store.set('hv_theme', next); onThemeChange();
 });
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (themeMode === 'auto') onThemeChange(); });
-function onThemeChange() { themeColors(); stripCache = null; for (const nm of LEADS) minis[nm].cache = null; explainDirty = true; dirty = true; }
+function onThemeChange() { themeColors(); stripCache = null; for (const nm of ALL_LEADS) minis[nm].cache = null; explainDirty = true; dirty = true; }
 // help
 function showHelp(v) { $('help').hidden = !v; if (v) $('helpClose').focus(); }
 $('helpBtn').addEventListener('click', () => showHelp(true));
@@ -1853,28 +2476,116 @@ document.addEventListener('keydown', e => {
 window.addEventListener('hashchange', () => { applyHashState(parseHash(), false); });
 new ResizeObserver(() => resize()).observe(stageEl);
 new ResizeObserver(() => { stripCache = null; dirty = true; }).observe(strip);
-new ResizeObserver(() => { for (const nm of LEADS) minis[nm].cache = null; dirty = true; }).observe($('miniGrid'));
+new ResizeObserver(() => { for (const nm of ALL_LEADS) minis[nm].cache = null; dirty = true; }).observe($('miniGrid'));
 
 // debug panel (self-check)
 function renderDebug() {
   const rows = CHECK.checks.map(c => `<tr><td class="${c.ok ? 'ok' : 'bad'}">${c.ok ? 'PASS' : 'FAIL'}</td><td>${c.name}</td><td>${c.val}</td></tr>`).join('');
-  const lt = Object.entries(CHECK.leads).map(([k, v]) => `<tr><td>${k}</td><td>${v.P}</td><td>${v.q}</td><td>${v.R}</td><td>${v.S}</td><td>${v.RS}</td><td>${v.ST20}</td><td>${v.T}</td></tr>`).join('');
-  const s = CHECK.summary;
-  $('debugBody').innerHTML = `<p dir="ltr" style="margin:6px 0">${CHECK.pass ? '<b class="ok">ALL PASS</b>' : '<b class="bad">SOME FAIL</b>'} — PR ${s.PR} ms · QRS ${s.QRS} ms · QT ${s.QT} ms · axis ${s.axis}° (I/aVF ${s.axisIaVF}°) · transition ${s.transition} · points ${s.nPoints} · build ${s.buildMs} ms</p>
+  const lt = Object.entries(STATS.L).filter(([k]) => LEADS.includes(k)).map(([k, v]) => `<tr><td>${k}</td><td>${v.q}</td><td>${v.qDur}</td><td>${v.R}</td><td>${v.S}</td><td>${v.RS}</td><td>${v.ST40}</td><td>${v.T}</td></tr>`).join('');
+  const s = CHECK.summary, n = NORMAL_CHECK.summary;
+  $('debugScn').innerHTML = `· ${SCENARIOS[S.scn].name}${SCENARIOS[S.scn].staged ? ' · ' + (S.stage === 'old' ? 'ישן' : 'חריף') : ''}`;
+  $('debugBody').innerHTML = `<p dir="ltr" style="margin:6px 0">${CHECK.pass ? '<b class="ok">ALL PASS</b>' : '<b class="bad">SOME FAIL</b>'} — scenario ${scnId(S.scn, S.stage)} · PR ${s.PR} ms · QRS ${s.QRS} ms · QT ${s.QT} ms · axis ${s.axis}° · build ${Math.round(M.buildMs)} ms
+  <br>normal heart: ${NORMAL_CHECK.pass ? 'PASS' : 'FAIL'} — PR ${n.PR} · QRS ${n.QRS} · QT ${n.QT} · axis ${n.axis}° · transition ${n.transition} · points ${n.nPoints}</p>
   <table><tbody>${rows}</tbody></table>
-  <table style="margin-top:8px"><thead><tr><th>lead</th><th>P</th><th>q</th><th>R</th><th>S</th><th>R/S</th><th>ST@J+20</th><th>T</th></tr></thead><tbody>${lt}</tbody></table>
-  <p dir="ltr" style="margin:6px 0;color:var(--ink-3)">events (ms): ${Object.entries(EV).map(([k, v]) => k + ' ' + Math.round(v)).join(' · ')}</p>`;
+  <table style="margin-top:8px"><thead><tr><th>lead</th><th>q</th><th>q ms</th><th>R</th><th>S</th><th>R/S</th><th>ST@J+40</th><th>T</th></tr></thead><tbody>${lt}</tbody></table>
+  <p dir="ltr" style="margin:6px 0;color:var(--ink-3)">events (ms): ${Object.entries(EV).filter(([, v]) => isFinite(v)).map(([k, v]) => k + ' ' + Math.round(v)).join(' · ')}</p>`;
+}
+
+// ===================================================== scenarios (UI)
+const plain = h => h.replace(/<[^>]+>/g, '');
+function buildScenarioUI() {
+  const list = $('scnList'); list.innerHTML = '';
+  SCN_GROUPS.forEach((g, gi) => {
+    const keys = SCN_KEYS.filter(k => SCENARIOS[k].group === gi);
+    const div = document.createElement('div'); div.className = 'scn-group'; div.setAttribute('role', 'group'); div.setAttribute('aria-label', g);
+    if (gi > 0) div.innerHTML = `<span class="gl">${g}</span>`;
+    for (const k of keys) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.dataset.scn = k; b.innerHTML = SCENARIOS[k].short;
+      b.setAttribute('aria-pressed', 'false'); b.title = plain(SCENARIOS[k].name);
+      b.addEventListener('click', () => setScenario(k, S.stage, { user: true }));
+      div.appendChild(b);
+    }
+    list.appendChild(div);
+  });
+  const sel = $('scnSelect');
+  sel.innerHTML = SCN_GROUPS.map((g, gi) => `<optgroup label="${g}">` + SCN_KEYS.filter(k => SCENARIOS[k].group === gi).map(k => `<option value="${k}">${plain(SCENARIOS[k].name)}</option>`).join('') + '</optgroup>').join('');
+  sel.addEventListener('change', () => setScenario(sel.value, S.stage, { user: true }));
+  document.querySelectorAll('#stageSeg button').forEach(b => b.addEventListener('click', () => setScenario(S.scn, b.dataset.stage, { user: true, keepLead: true })));
+  $('tgCompare').addEventListener('change', e => { S.compare = e.target.checked; computeRanges(); stripCache = null; for (const nm of ALL_LEADS) minis[nm].cache = null; document.querySelectorAll('.lg-scn')[2].hidden = !ghostOn(); dirty = true; writeHash(); });
+}
+function renderScnInfo() {
+  const sc = SCENARIOS[S.scn], box = $('scnInfo');
+  if (S.scn === 'normal') { box.hidden = true; box.innerHTML = ''; return; }
+  const ecg = pickStage(sc.ecg), recip = pickStage(sc.recip), stageTxt = sc.staged ? (S.stage === 'old' ? 'ישן' : 'חריף') : '';
+  const items = (typeof ecg === 'function' ? ecg(M, STATS) : ecg || []).map(x => `<li>${x}</li>`).join('');
+  box.innerHTML = `<h2>${sc.name}${stageTxt ? `<span class="scn-pill">${stageTxt}</span>` : ''}</h2>
+    <p class="broken">${pickStage(sc.broken)}</p>
+    <dl><dt>באק״ג</dt><dd><ul>${items}</ul></dd>
+    <dt>לאן להסתכל</dt><dd>${sc.leads}</dd>
+    ${recip ? `<dt>רציפרוקלי</dt><dd>${recip}</dd>` : ''}</dl>
+    <div class="field"><b>בשטח:</b> ${pickStage(sc.field)}</div>
+    ${sc.note ? `<p class="model-note">${sc.note}</p>` : ''}
+    <p class="model-note">כל הרישום מחושב מהמודל אחרי השינוי – לא מצויר ביד. <span class="ltr">PR ${Math.round(STATS.PR)} ms · QRS ${Math.round(STATS.QRS)} ms · QT ${Math.round(STATS.QT)} ms · axis ${Math.round(STATS.axis)}°</span></p>`;
+  box.hidden = false;
+}
+function focusTime(foc, lead) {
+  const a = M.ecg[foc.lead] || M.ecg[lead], dt = M.P.dt, Q = EV.qrsOff - EV.qrsOn;
+  const argExt = (t0, t1, sign) => { let best = t0, bv = -Infinity; for (let t = t0; t <= t1; t += dt) { const v = sign * a[Math.round(t / dt)]; if (v > bv) { bv = v; best = t; } } return best; };
+  if (foc.t === 'late') return argExt(EV.qrsOn + 0.55 * Q, EV.qrsOff, 1);       // terminal R' (RBBB)
+  if (foc.t === 'r') return argExt(EV.qrsOn, EV.qrsOff, foc.lead === 'V1' ? -1 : 1); // biggest deflection of the focus lead
+  if (foc.t === 'q') return argExt(EV.qrsOn, EV.qrsOn + 0.45 * Q, -1);          // the Q wave
+  return NAMED_T()[foc.t] ?? S.t;
+}
+function setScenario(k, st, opts = {}) {
+  const sc = SCENARIOS[k]; if (!sc) return;
+  const tb = performance.now();
+  S.scn = k; S.stage = st === 'old' ? 'old' : 'acute';
+  M = getModel(k, S.stage); EV = M.ev;
+  CHECK = HeartModel.pathoCheck(M, k, sc.staged ? S.stage : '', NORMAL); STATS = CHECK.stats;
+  buildSurface(); buildPoints(); buildCS(); fillLoop();
+  LEADS = k === 'post' ? NORMAL.LEAD_NAMES.concat(POST_LEADS) : NORMAL.LEAD_NAMES.slice();
+  for (const nm of POST_LEADS) { minis[nm].c.hidden = k !== 'post'; document.querySelector(`.leadbtn[data-lead="${nm}"]`).hidden = k !== 'post'; }
+  $('miniGrid').classList.toggle('post', k === 'post');
+  $('twelveTitle').innerHTML = k === 'post' ? `15 חיבורים (כולל ${ltr('V7–V9')} האחוריים) · לחיצה בוחרת חיבור` : '12 חיבורים · לחיצה בוחרת חיבור';
+  // focus: the lead / moment where the scenario is most telling
+  const foc = sc.focus ? (sc.focus.lead ? sc.focus : sc.focus[S.stage]) : null;
+  let lead = S.lead;
+  if (foc && (opts.user ? !opts.keepLead : opts.focusLead)) lead = foc.lead;
+  if (!LEADS.includes(lead)) lead = 'V2';
+  if (foc && (opts.user || opts.focusT)) S.t = clamp(focusTime(foc, lead), 0, BEAT);
+  if ((opts.user || opts.focusView) && S.clip === 'off' && !opts.keepLead) { const v = (foc && foc.view) || 'front'; if (v !== S.view) setView(v, !opts.user); }
+  computeRanges();
+  themeColors();
+  stripCache = null; for (const nm of ALL_LEADS) minis[nm].cache = null;
+  explainDirty = true; lastLeadHTML = ''; lastPhase = '';
+  document.querySelectorAll('#scnList .chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.scn === k)));
+  $('scnSelect').value = k;
+  $('stageSeg').hidden = !sc.staged;
+  document.querySelectorAll('#stageSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.stage === S.stage)));
+  $('compareWrap').hidden = k === 'normal';
+  const lg = document.querySelectorAll('.lg-scn');
+  lg[0].hidden = !(sc.zone && !(sc.staged && S.stage === 'old')); lg[1].hidden = !(sc.staged && S.stage === 'old'); lg[2].hidden = !ghostOn();
+  $('stripMeta').innerHTML = `${ltr('PR ' + Math.round(EV.qrsOn - EV.pOn) + ' ms')} · ${ltr('QRS ' + Math.round(EV.qrsOff - EV.qrsOn) + ' ms')} · ${ltr('QT ' + Math.round(EV.tEnd - EV.qrsOn) + ' ms')}`;
+  renderScnInfo(); renderDebug();
+  if (lead !== S.lead || opts.user) selectLead(lead); else buildAxisLabels();
+  console.log(`[heart-vector] scenario ${scnId(k, S.stage)} ${CHECK.pass ? 'PASS' : 'FAIL'} (${Math.round(performance.now() - tb)} ms) ${JSON.stringify(CHECK.summary)}`);
+  CHECK.checks.forEach(c => console.log(`[heart-vector]   ${c.ok ? 'PASS' : 'FAIL'}  ${c.name}  (${c.val})`));
+  dirty = true; writeHash();
 }
 
 function applyHashState(h, initial) {
   if (h.theme) applyTheme(h.theme);
+  if ('compare' in h) { S.compare = h.compare; $('tgCompare').checked = h.compare; }
+  const wantScn = h.scn || 'normal', wantStage = h.stage || (h.scn ? 'acute' : S.stage);
+  if (wantScn !== S.scn || wantStage !== S.stage || initial) setScenario(wantScn, wantStage, { focusT: !('t' in h), focusLead: !h.lead, focusView: !h.view && wantScn !== 'normal' });
+  if (h.tName) h.t = NAMED_T()[h.tName]; // e.g. t=st in LBBB (longer QRS) or t=pr in WPW (short PR): use this scenario's event times
   for (const k of ['cs', 'arrows', 'vec', 'axis', 'vloop', 'labels']) if (k in h) { S[k] = h[k]; const id = Object.keys(TG).find(x => TG[x] === k); $(id).checked = h[k]; }
   if ('opacity' in h) { S.opacity = h.opacity; $('opacity').value = Math.round((1 - h.opacity) * 100); }
   if ('speed' in h) { S.speed = h.speed; document.querySelectorAll('#speedSeg button').forEach(x => x.setAttribute('aria-pressed', String(+x.dataset.speed === S.speed))); }
   if ('clip' in h) S.clip = h.clip;
   if ('clipAt' in h) { S.clipAt = h.clipAt; $('clipAt').value = Math.round(h.clipAt * 10); }
   if (!initial && h.theme) onThemeChange();
-  if (h.lead && h.lead !== S.lead) { S.lead = h.lead; if (!initial) selectLead(h.lead); }
+  if (h.lead && h.lead !== S.lead && LEADS.includes(h.lead)) { S.lead = h.lead; if (!initial) selectLead(h.lead); }
   if ('t' in h) S.t = clamp(h.t, 0, BEAT);
   updateClip();
   if (h.view) setView(h.view, initial); else if (initial) setView(S.clip !== 'off' ? 'cut' : S.view, true);
@@ -1887,12 +2598,20 @@ function applyHashState(h, initial) {
 const H0 = parseHash();
 if (H0.solo) document.body.classList.add('solo');
 if (!H0.theme) applyTheme(themeMode);
-buildLeadButtons(); buildMinis();
+buildLeadButtons(); buildMinis(); buildScenarioUI();
+buildSurface(); buildPoints(); buildCS();
 applyHashState(H0, true);
 $('leadNow').textContent = S.lead;
 document.querySelectorAll('.leadbtn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lead === S.lead)));
-$('stripMeta').innerHTML = `${ltr('PR ' + Math.round(EV.qrsOn - EV.pOn) + ' ms')} · ${ltr('QRS ' + Math.round(EV.qrsOff - EV.qrsOn) + ' ms')} · ${ltr('QT ' + Math.round(EV.tEnd - EV.qrsOn) + ' ms')}`;
 renderDebug();
+if (H0.allchecks) setTimeout(() => { // dev: run every scenario's numeric check and print one table
+  const rows = [];
+  for (const k of SCN_KEYS) for (const st of SCENARIOS[k].staged ? ['acute', 'old'] : ['']) {
+    const m = getModel(k, st || 'acute'), r = HeartModel.pathoCheck(m, k, st, NORMAL);
+    rows.push(`${(scnId(k, st || 'acute')).padEnd(11)} ${r.pass ? 'PASS' : 'FAIL'}  PR ${r.summary.PR} QRS ${r.summary.QRS} QT ${r.summary.QT} axis ${r.summary.axis}  ` + r.checks.filter(c => !c.ok).map(c => 'FAIL:' + c.name).join(' '));
+  }
+  console.log('[heart-vector] ALLCHECKS ' + rows.join(' ¦ '));
+}, 50);
 await document.fonts.ready.catch(() => {});
 themeColors();
 resize();
@@ -1918,6 +2637,12 @@ if (H0.selftest) setTimeout(async () => { // dev: exercise the UI handlers and r
   await step('speed', async () => { document.querySelector('#speedSeg [data-speed="1"]').click(); if (S.speed !== 1) throw new Error(); });
   await step('theme', async () => { $('themeBtn').click(); $('themeBtn').click(); $('themeBtn').click(); });
   await step('help', async () => { $('helpBtn').click(); $('helpClose').click(); });
+  for (const k of ['rbbb', 'lbbb', 'avb1', 'wpw', 'lvh', 'sub', 'ant', 'post']) await step('scn ' + k, async () => { document.querySelector(`#scnList .chip[data-scn="${k}"]`).click(); if (S.scn !== k) throw new Error(S.scn); });
+  await step('stage old', async () => { document.querySelector('#stageSeg [data-stage="old"]').click(); if (S.stage !== 'old') throw new Error(S.stage); });
+  await step('lead V8', async () => { document.querySelector('.leadbtn[data-lead="V8"]').click(); if (S.lead !== 'V8') throw new Error(S.lead); });
+  await step('compare off', async () => { $('tgCompare').click(); if (S.compare) throw new Error('compare'); $('tgCompare').click(); });
+  await step('select inf', async () => { const s = $('scnSelect'); s.value = 'inf'; s.dispatchEvent(new Event('change')); if (S.scn !== 'inf' || S.lead === 'V8') throw new Error(S.scn + ' ' + S.lead); });
+  await step('back to normal', async () => { document.querySelector('#scnList .chip[data-scn="normal"]').click(); if (S.scn !== 'normal') throw new Error(S.scn); });
   await wait(500);
   log.push('hash ' + location.hash);
   console.log('[heart-vector] SELFTEST ' + (log.some(l => l.startsWith('ERR')) ? 'FAIL' : 'OK') + ' | ' + log.join(' | '));
