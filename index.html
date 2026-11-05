@@ -1,0 +1,1929 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>הלב החשמלי</title>
+<meta name="description" content="מודל לימודי תלת-ממדי: הפעלה חשמלית של הלב, וקטור הלב ואק״ג 12 חיבורים המחושב מהמודל">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<style>
+:root{
+  color-scheme: light;
+  --bg:#f5f1eb; --surface:#ffffff; --surface-2:#f1ebe3; --ink:#1f1b18; --ink-2:#5f5750; --ink-3:#8a8178; --line:#e3dacf;
+  --accent:#b8322a; --accent-soft:#f6dcd7; --focus:#2b59c3;
+  --stage-1:#fbf8f4; --stage-2:#e9e1d6;
+  --paper:#fffaf8; --grid-minor:#f5d3cc; --grid-major:#e9a296; --trace:#191512; --cursor:#2b59c3;
+  --c-rest:#b8645a; --c-depol:#ffd60a; --c-plateau:#ff6a2b; --c-repol:#1f9bff;
+  --c-vec:#c2187a; --c-pos:#17914a; --c-neg:#d23c3c; --c-axis:#17914a;
+  --c-p:#d98c0a; --c-qrs:#c2187a; --c-t:#0c8f84; --c-cs:#c9a227;
+  --shadow:0 1px 2px rgba(40,25,10,.06),0 4px 14px rgba(40,25,10,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --bg:#111317; --surface:#1a1d22; --surface-2:#22262d; --ink:#ede9e4; --ink-2:#b0a99f; --ink-3:#7f786f; --line:#2f343c;
+    --accent:#ff7a6b; --accent-soft:#3a2321; --focus:#86a9ff;
+    --stage-1:#1d2128; --stage-2:#0e1014;
+    --paper:#16181c; --grid-minor:#33262a; --grid-major:#5c3438; --trace:#f3efe9; --cursor:#86a9ff;
+    --c-rest:#a85d55; --c-depol:#ffe14d; --c-plateau:#ff7a3d; --c-repol:#4cb4ff;
+    --c-vec:#ff4fa8; --c-pos:#3ccf7a; --c-neg:#ff6b6b; --c-axis:#3ccf7a;
+    --c-p:#f2a93b; --c-qrs:#ff4fa8; --c-t:#2fd1c0; --c-cs:#e8c547;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --bg:#111317; --surface:#1a1d22; --surface-2:#22262d; --ink:#ede9e4; --ink-2:#b0a99f; --ink-3:#7f786f; --line:#2f343c;
+  --accent:#ff7a6b; --accent-soft:#3a2321; --focus:#86a9ff;
+  --stage-1:#1d2128; --stage-2:#0e1014;
+  --paper:#16181c; --grid-minor:#33262a; --grid-major:#5c3438; --trace:#f3efe9; --cursor:#86a9ff;
+  --c-rest:#a85d55; --c-depol:#ffe14d; --c-plateau:#ff7a3d; --c-repol:#4cb4ff;
+  --c-vec:#ff4fa8; --c-pos:#3ccf7a; --c-neg:#ff6b6b; --c-axis:#3ccf7a;
+  --c-p:#f2a93b; --c-qrs:#ff4fa8; --c-t:#2fd1c0; --c-cs:#e8c547;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Hebrew",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;font-size:15px;line-height:1.5;overflow-x:hidden}
+.ltr{direction:ltr;unicode-bidi:isolate;display:inline-block}
+button,input,select{font:inherit;color:inherit}
+.app{max-width:1680px;margin:0 auto;padding:10px 16px 20px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:4px 0 10px}
+header.top h1{margin:0;font-size:1.45rem;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:.45em}
+header.top h1 svg{width:1.15em;height:1.15em;color:var(--accent);flex:none}
+header.top .sub{margin:2px 0 0;color:var(--ink-2);font-size:.88rem}
+.top-actions{display:flex;gap:8px;flex:none}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;cursor:pointer;font-size:.86rem;line-height:1.2;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{border-color:var(--ink-3)}
+.btn:focus-visible,.seg button:focus-visible,.leadbtn:focus-visible,.mini:focus-visible,#strip:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .btn.primary{color:#1a0d0b}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.primary{color:#1a0d0b}}
+
+:root{--stageH:min(62vh,520px)}
+@media (min-width:820px){:root{--stageH:max(430px,calc(100vh - 340px))}}
+.layout{display:grid;gap:12px;grid-template-columns:minmax(0,1fr);grid-template-areas:"stage" "strip" "side" "twelve"}
+@media (min-width:820px){
+  .layout{grid-template-columns:300px minmax(0,1fr);grid-template-areas:"side stage" "strip strip" "twelve twelve"}
+  .side{height:var(--stageH);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding-inline-end:2px}
+}
+@media (min-width:1200px){
+  .layout{grid-template-columns:300px minmax(0,1fr) 250px;grid-template-areas:"side stage twelve" "strip strip strip"}
+  .twelve{height:var(--stageH);display:flex;flex-direction:column}
+}
+.side{grid-area:side;display:flex;flex-direction:column;gap:12px;min-height:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.stage{grid-area:stage;position:relative;height:var(--stageH);min-height:340px;border-radius:14px;overflow:hidden;border:1px solid var(--line);
+  background:radial-gradient(120% 90% at 50% 40%,var(--stage-1),var(--stage-2))}
+#gl{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.viewbar{position:absolute;top:10px;inset-inline:10px;display:flex;flex-wrap:wrap;gap:6px;pointer-events:none}
+.viewbar>*{pointer-events:auto}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px;box-shadow:var(--shadow)}
+.seg button{border:0;background:transparent;border-radius:999px;padding:5px 10px;cursor:pointer;font-size:.82rem;line-height:1.2;color:var(--ink-2);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.stage .hud{position:absolute;bottom:10px;inset-inline-start:10px;font-size:.78rem;color:var(--ink-2);background:color-mix(in srgb,var(--surface) 82%,transparent);border:1px solid var(--line);border-radius:10px;padding:4px 8px;pointer-events:none}
+#compass{position:absolute;bottom:8px;inset-inline-end:8px;width:92px;height:92px;pointer-events:none}
+.loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-2);font-size:.95rem}
+
+.explain{padding:12px 14px;flex:none}
+.phase-pill{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;font-weight:600;border-radius:999px;padding:2px 9px;background:var(--surface-2);color:var(--ink-2)}
+.phase-pill i{width:8px;height:8px;border-radius:50%;background:currentColor;display:inline-block}
+.explain h2{margin:6px 0 4px;font-size:1.06rem;line-height:1.35}
+.explain p{margin:0 0 6px;color:var(--ink);font-size:.9rem}
+.explain .leadline{margin-top:8px;padding:8px 10px;border-radius:10px;background:var(--surface-2);font-size:.88rem}
+.readouts{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:8px;font-size:.78rem;color:var(--ink-2)}
+.readouts b{color:var(--ink);font-weight:600}
+
+.controls{padding:12px 14px;display:flex;flex-direction:column;gap:12px;flex:none}
+.controls h3,.twelve h3{margin:0 0 6px;font-size:.8rem;font-weight:600;color:var(--ink-2);letter-spacing:.01em}
+.leadgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
+.leadbtn{border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:4px 0;cursor:pointer;font-size:.82rem;font-weight:600;direction:ltr}
+.leadbtn[aria-pressed="true"]{background:var(--c-axis);border-color:var(--c-axis);color:#fff}
+.toggles{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}
+.tg{display:flex;align-items:center;gap:7px;font-size:.86rem;cursor:pointer;user-select:none;padding:2px 0}
+.tg input{width:16px;height:16px;accent-color:var(--accent);margin:0}
+.range{display:flex;align-items:center;gap:8px;font-size:.84rem}
+.range input[type=range]{flex:1;accent-color:var(--accent);min-width:0}
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:3px 10px;font-size:.78rem;color:var(--ink-2)}
+.legend span{display:flex;align-items:center;gap:6px}
+.sw{width:11px;height:11px;border-radius:50%;flex:none;display:inline-block}
+.sw.bar{border-radius:2px;width:16px;height:4px}
+.sw.arrow{width:16px;height:10px;border-radius:0;background:none!important;position:relative}
+.sw.arrow::before{content:"";position:absolute;inset-inline-start:0;top:4px;width:11px;height:2px;background:var(--col)}
+.sw.arrow::after{content:"";position:absolute;inset-inline-end:0;top:1px;border:4px solid transparent;border-inline-end:0;border-inline-start:6px solid var(--col)}
+[dir=rtl] .sw.arrow{transform:scaleX(-1)}
+.divider{height:1px;background:var(--line);margin:0 -14px}
+
+.strip{grid-area:strip;padding:8px 10px 10px}
+.stripbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-bottom:6px}
+.stripbar .lead-now{font-weight:700;font-size:1rem}
+.stripbar .meta{color:var(--ink-2);font-size:.8rem}
+.stripbar .spacer{flex:1}
+#strip{display:block;width:100%;height:190px;touch-action:pan-y;cursor:ew-resize;border-radius:8px}
+@media (max-width:640px){#strip{height:170px}}
+.playbtn{width:36px;height:36px;border-radius:50%;border:0;background:var(--accent);color:#fff;display:grid;place-items:center;cursor:pointer;flex:none}
+:root[data-theme="dark"] .playbtn{color:#1a0d0b}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .playbtn{color:#1a0d0b}}
+.playbtn svg{width:16px;height:16px}
+
+.twelve{grid-area:twelve;padding:10px 12px}
+.minigrid{display:grid;direction:ltr;gap:6px;grid-auto-flow:column;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(3,auto)}
+.mini{display:block;width:100%;height:64px;border-radius:8px;border:1px solid var(--line);cursor:pointer;background:var(--paper);padding:0}
+@media (min-width:1200px){.minigrid{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(6,minmax(0,1fr));flex:1;min-height:0}.mini{height:100%;min-height:40px}}
+.mini[aria-pressed="true"]{border-color:var(--c-axis);box-shadow:0 0 0 2px color-mix(in srgb,var(--c-axis) 45%,transparent)}
+.twelve .note{font-size:.74rem;color:var(--ink-3);margin:6px 0 0}
+
+footer{margin-top:14px;color:var(--ink-3);font-size:.8rem;display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:space-between}
+.help{position:fixed;inset:0;background:rgba(10,8,6,.45);display:grid;place-items:center;padding:16px;z-index:20}
+.help[hidden]{display:none}
+.help .card{max-width:480px;padding:18px 20px}
+.help h2{margin:0 0 8px;font-size:1.15rem}
+.help ul{margin:0 0 12px;padding-inline-start:20px;font-size:.92rem}
+.help li{margin:4px 0}
+#debug{grid-column:1/-1;font-size:.78rem;padding:10px 12px}
+#debug table{border-collapse:collapse;direction:ltr;width:100%}
+#debug td,#debug th{border-bottom:1px solid var(--line);padding:2px 6px;text-align:left}
+#debug .ok{color:var(--c-pos)} #debug .bad{color:var(--c-neg)}
+body.solo .stage{position:fixed;inset:0;height:100vh;border-radius:0;z-index:30;border:0}
+body.solo .viewbar,body.solo .hud{display:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div>
+      <h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/><path d="M3.5 12h4l2-3 3 6 2-3h6"/></svg>הלב החשמלי</h1>
+      <p class="sub">מודל לימודי תלת-ממדי: מה קורה בשריר הלב בכל רגע של הפעימה – והאק״ג מחושב ישירות מהמודל</p>
+    </div>
+    <div class="top-actions">
+      <button class="btn" id="helpBtn" type="button" aria-label="איך להשתמש">?</button>
+      <button class="btn" id="themeBtn" type="button" aria-label="ערכת צבע">ערכת צבע: אוטומטית</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="stage" id="stage" aria-label="תצוגת הלב התלת-ממדית">
+      <canvas id="gl" aria-hidden="true"></canvas>
+      <div class="loading" id="loading">מחשב את המודל…</div>
+      <div class="viewbar">
+        <div class="seg" role="group" aria-label="נקודת מבט" id="viewSeg">
+          <button type="button" data-view="front" aria-pressed="true">מלפנים</button>
+          <button type="button" data-view="left" aria-pressed="false">משמאל</button>
+          <button type="button" data-view="inferior" aria-pressed="false">מלמטה</button>
+          <button type="button" data-view="posterior" aria-pressed="false">מאחור</button>
+          <button type="button" data-view="lead" aria-pressed="false">מבט מהחיבור</button>
+        </div>
+        <button class="btn" type="button" id="resetBtn" title="איפוס מצלמה">איפוס</button>
+      </div>
+      <div class="hud" id="hud"></div>
+      <canvas id="compass" aria-hidden="true"></canvas>
+    </section>
+
+    <div class="side">
+    <section class="card explain" id="explain" aria-live="polite">
+      <span class="phase-pill" id="phasePill"><i></i><span id="phaseTag">—</span></span>
+      <h2 id="phaseTitle">—</h2>
+      <p id="phaseText"></p>
+      <div class="leadline" id="leadLine"></div>
+      <div class="readouts" id="readouts"></div>
+    </section>
+
+    <section class="card controls" id="controls" aria-label="הגדרות תצוגה">
+      <div>
+        <h3>חיבור נבחר</h3>
+        <div class="leadgrid" id="leadGrid"></div>
+      </div>
+      <div class="divider"></div>
+      <div>
+        <h3>שכבות</h3>
+        <div class="toggles">
+          <label class="tg"><input type="checkbox" id="tgCS" checked>מערכת ההולכה</label>
+          <label class="tg"><input type="checkbox" id="tgArrows" checked>חצים מקומיים</label>
+          <label class="tg"><input type="checkbox" id="tgVec" checked>וקטור הלב</label>
+          <label class="tg"><input type="checkbox" id="tgAxis" checked>ציר החיבור</label>
+          <label class="tg"><input type="checkbox" id="tgLoop" checked>לולאת הווקטור</label>
+          <label class="tg"><input type="checkbox" id="tgLabels" checked>תוויות</label>
+        </div>
+      </div>
+      <label class="range">שקיפות דופן<input type="range" id="opacity" min="0" max="100" value="62" aria-label="שקיפות דופן"></label>
+      <div class="divider"></div>
+      <div>
+        <h3>מישור חיתוך</h3>
+        <div class="seg" role="group" aria-label="מישור חיתוך" id="clipSeg" style="margin-bottom:8px">
+          <button type="button" data-clip="off" aria-pressed="true">ללא</button>
+          <button type="button" data-clip="frontal" aria-pressed="false">חזיתי</button>
+          <button type="button" data-clip="transverse" aria-pressed="false">רוחבי</button>
+          <button type="button" data-clip="long" aria-pressed="false">ציר ארוך</button>
+        </div>
+        <label class="range">מיקום<input type="range" id="clipAt" min="-80" max="80" value="0" aria-label="מיקום מישור החיתוך" disabled></label>
+      </div>
+      <div class="divider"></div>
+      <div>
+        <h3>מקרא</h3>
+        <div class="legend">
+          <span><i class="sw" style="background:var(--c-rest)"></i>מנוחה</span>
+          <span><i class="sw" style="background:var(--c-depol)"></i>דה-פולריזציה עכשיו</span>
+          <span><i class="sw" style="background:var(--c-plateau)"></i>מופעל (פלטו)</span>
+          <span><i class="sw" style="background:var(--c-repol)"></i>רה-פולריזציה</span>
+          <span><i class="sw arrow" style="--col:var(--c-depol)"></i>חזית הפעלה</span>
+          <span><i class="sw arrow" style="--col:var(--c-repol)"></i>חזית התאוששות</span>
+          <span><i class="sw arrow" style="--col:var(--c-vec)"></i>וקטור הלב</span>
+          <span><i class="sw arrow" style="--col:var(--c-pos)"></i>הטל על החיבור</span>
+          <span><i class="sw bar" style="background:var(--c-cs)"></i>מערכת ההולכה</span>
+          <span><i class="sw bar" style="background:linear-gradient(90deg,var(--c-p) 0 33%,var(--c-qrs) 33% 66%,var(--c-t) 66%)"></i>לולאות <span class="ltr">P · QRS · T</span></span>
+        </div>
+      </div>
+    </section>
+    </div>
+
+    <section class="card strip" id="stripCard" aria-label="אק״ג של החיבור הנבחר">
+      <div class="stripbar">
+        <button class="playbtn" id="playBtn" type="button" aria-label="נגן"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path id="playIcon" d="M7 4.5v15l13-7.5z"/></svg></button>
+        <div class="seg" role="group" aria-label="מהירות" id="speedSeg">
+          <button type="button" data-speed="0.1" aria-pressed="false"><span class="ltr">×0.1</span></button>
+          <button type="button" data-speed="0.25" aria-pressed="true"><span class="ltr">×0.25</span></button>
+          <button type="button" data-speed="1" aria-pressed="false"><span class="ltr">×1</span></button>
+        </div>
+        <label class="tg"><input type="checkbox" id="tgLoopPlay" checked>חזרה</label>
+        <span class="spacer"></span>
+        <span class="lead-now"><span class="ltr" id="leadNow">II</span></span>
+        <span class="meta" id="stripMeta"></span>
+      </div>
+      <canvas id="strip" tabindex="0" role="slider" aria-label="סמן הזמן על האק״ג" aria-valuemin="0" aria-valuemax="800" aria-valuenow="0" dir="ltr"></canvas>
+    </section>
+
+    <section class="card twelve" aria-label="12 חיבורים">
+      <h3>12 חיבורים · לחיצה בוחרת חיבור</h3>
+      <div class="minigrid" id="miniGrid"></div>
+      <p class="note">אותה פעימה ואותו סמן בכל החיבורים; כל חיבור = הטל של אותו וקטור על כיוון אחר.</p>
+    </section>
+
+    <section class="card" id="debug" hidden>
+      <strong>בדיקה עצמית (מספרית) של 12 החיבורים</strong>
+      <div id="debugBody"></div>
+    </section>
+  </main>
+
+  <footer>
+    <span>מודל לימודי פשוט; לא סימולציה של תאים אמיתיים.</span>
+    <span>רשת האק״ג: <span class="ltr">1 mm = 40 ms · 0.1 mV</span> (בפס הראשי הציר האופקי מתוח כדי להראות פעימה אחת)</span>
+  </footer>
+</div>
+
+<div class="help" id="help" hidden>
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <h2 id="helpTitle">איך להשתמש</h2>
+    <ul>
+      <li><b>גררו את הסמן</b> על האק״ג שבתחתית (או חיצי המקלדת) – הלב מציג בדיוק את אותו רגע בפעימה.</li>
+      <li><b>סובבו</b> את הלב בגרירה, <b>הגדילו</b> בגלגלת או בצביטה, <b>הזיזו</b> בשתי אצבעות או בלחצן ימני.</li>
+      <li><b>בחרו חיבור</b> (למשל <span class="ltr">II</span> או <span class="ltr">V1</span>): הציר הירוק מראה מאיפה החיבור "מסתכל", וההטל של וקטור הלב על הציר הוא בדיוק הערך שמצויר בגרף.</li>
+      <li><b>נגן</b> מריץ את הפעימה בהילוך איטי; <b>מישור חיתוך</b> חושף את פנים הדופן ואת חזית הגל.</li>
+    </ul>
+    <button class="btn primary" type="button" id="helpClose">הבנתי</button>
+  </div>
+</div>
+
+<script>
+/*MODEL-START*/
+// =====================================================================
+//  HeartModel – geometry, conduction, activation, action potentials,
+//  heart vector and 12-lead ECG.  Pure JS, no rendering dependencies.
+//  Patient frame: +x = patient LEFT, +y = SUPERIOR, +z = ANTERIOR (cm).
+//  Time in ms.  Velocities in cm/ms (0.1 cm/ms = 1 m/s).
+// =====================================================================
+const HeartModel = (() => {
+  'use strict';
+  // ---------------- vector helpers ----------------
+  const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+  const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+  const mul = (a, s) => [a[0] * s, a[1] * s, a[2] * s];
+  const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  const len = a => Math.hypot(a[0], a[1], a[2]);
+  const nrm = a => { const l = len(a) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
+  const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+  function rng(seed) { // mulberry32
+    let a = seed >>> 0;
+    return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  }
+
+  // ---------------- default parameters (the "normal heart") ----------------
+  const DEFAULTS = {
+    // anatomy: long axis base->apex in patient frame (left, inferior, anterior)
+    apexDir: [0.55, -0.75, 0.35],
+    roll: -48,                 // deg rotation about the long axis
+    hV: 0.34, hA: 0.23,         // sampling spacing ventricles / atria (cm)
+    wallA: 0.24,                // atrial wall (cm)
+    wallRV: 0.45,               // RV free wall (cm)
+    // conduction velocities (cm/ms)
+    vAtr: 0.095, vBach: 0.17, vHis: 0.2, vBundle: 0.3, vPurk: 0.14, vMyo: 0.04,
+    avDelay: 95,                // AV-node delay (ms)
+    rbbSeedFrom: 1, rbbDelay: 3, fascSeedFrom: 0, // where bundle branches insert into the Purkinje layer
+    // Purkinje layer: subendocardial (depth cm), up to apex->base fraction; posterobasal LV left sparse (activated last)
+    purkTopLV: 1.0, purkTopRV: 1.0, purkRVOT: 1.6, purkDepth: 0.22, purkPostBase: 0.72, purkPostZ: -1.0,
+    // action potential
+    apdA: 150, tauRepA: 14, tauUp: 2.2,
+    apdV: 212, apdEndo: 45, apdBase: 26, apdRV: -6, tauRepV: 21,
+    // timing of the displayed beat
+    tStart: 70, beatLen: 800, dt: 1, smoothMs: 2.0,
+    targetII: 1.25,             // calibrate R in lead II (mV)
+  };
+
+  // ---------------- SDF primitives ----------------
+  function sdEll(p, c, r) {
+    const x = (p[0] - c[0]) / r[0], y = (p[1] - c[1]) / r[1], z = (p[2] - c[2]) / r[2];
+    const k0 = Math.sqrt(x * x + y * y + z * z);
+    const x2 = x / r[0], y2 = y / r[1], z2 = z / r[2];
+    const k1 = Math.sqrt(x2 * x2 + y2 * y2 + z2 * z2) || 1e-6;
+    return k0 * (k0 - 1) / k1;
+  }
+  function sdCap(p, a, b, r) {
+    const pa = sub(p, a), ba = sub(b, a);
+    const h = clamp(dot(pa, ba) / dot(ba, ba), 0, 1);
+    return len(sub(pa, mul(ba, h))) - r;
+  }
+  function smin(a, b, k) { const h = clamp(0.5 + 0.5 * (b - a) / k, 0, 1); return b + (a - b) * h - k * h * (1 - h); }
+
+  // ---------------- anatomy (ventricular frame: X lateral-left, Y toward base, Z anterior) ----------------
+  // Shapes are in the local "heart frame"; the frame is tilted into the chest below.
+  const A = {
+    Yb: 1.7,               // ventricular base / valve plane
+    YaMin: 2.08,           // atria start above the fibrous ring
+    Yapex: -6.2,
+    LVo: { c: [0, 0, 0], r: [2.8, 6.2, 2.8] },
+    LVi: { c: [0, 0.6, 0], r: [1.7, 5.6, 1.7] },
+    RVo: { c: [-1.75, 0.3, 1.25], r: [3.1, 5.1, 2.55] },
+    RVOT: { a: [-1.0, 0.4, 2.3], b: [-0.1, 2.1, 3.4], r: 1.25 },   // infundibulum -> pulmonary valve
+    AoV: [-0.75, 1.95, 0.55],                                       // aortic valve (LV outflow)
+    RA: { c: [-2.0, 3.55, -0.75], r: [2.25, 2.1, 2.1] },
+    RAA: { c: [-1.9, 3.75, 2.35], r: [1.35, 0.6, 1.15] },
+    LA: { c: [2.2, 3.5, -1.1], r: [2.7, 1.8, 1.9] },
+    LAA: { c: [2.35, 2.55, 2.3], r: [1.05, 0.65, 1.45] },
+    SVC: [-2.3, 5.3, -0.6], IVC: [-2.2, 2.4, -2.2],                // caval entries into the RA
+  };
+
+  function makeGeometry(P) {
+    const wA = P.wallA, wRV = P.wallRV;
+    function parts(q) {
+      const dLVo = sdEll(q, A.LVo.c, A.LVo.r);
+      const dLVi = sdEll(q, A.LVi.c, A.LVi.r);
+      const dRVb = sdEll(q, A.RVo.c, A.RVo.r);
+      const dCap = sdCap(q, A.RVOT.a, A.RVOT.b, A.RVOT.r);
+      const dRV = smin(dRVb, dCap, 0.9);
+      const dRA = smin(sdEll(q, A.RA.c, A.RA.r), sdEll(q, A.RAA.c, A.RAA.r), 0.55);
+      const dLA = smin(sdEll(q, A.LA.c, A.LA.r), sdEll(q, A.LAA.c, A.LAA.r), 0.45);
+      return { dLVo, dLVi, dRV, dCap, dRA, dLA };
+    }
+    // RV is truncated at the valve plane, except the infundibulum (RVOT) up to the pulmonary valve
+    const rvTrunc = (q, d) => Math.min(q[1] - A.Yb, Math.max(q[1] - (A.RVOT.b[1] + 0.15), d.dCap - 0.25, 0.9 - q[2]));
+    // signed distance of each tissue (negative inside the wall)
+    function tissue(q, d, wAvis) {
+      const wa = wAvis || wA;
+      const lv = Math.max(d.dLVo, -d.dLVi, q[1] - A.Yb);
+      const rv = Math.max(d.dRV, -(d.dRV + wRV), -d.dLVo, rvTrunc(q, d));
+      const atrCut = A.YaMin - q[1];
+      const notRVOT = -(d.dCap - 0.15);
+      const ra = Math.max(d.dRA, -(d.dRA + wa), -(d.dLA + wa), atrCut, notRVOT);
+      const la = Math.max(d.dLA, -(d.dLA + wa), -(d.dRA + wa), atrCut, notRVOT);
+      return { lv, rv, ra, la };
+    }
+    function myoSDF(q, wAvis) { const d = parts(q); const t = tissue(q, d, wAvis); return Math.min(t.lv, t.rv, t.ra, t.la); }
+    return { parts, tissue, myoSDF };
+  }
+
+  // ---------------- frame: heart -> patient ----------------
+  function makeFrame(P) {
+    const a = nrm(P.apexDir);
+    const e3 = mul(a, -1);                       // toward base
+    let e2 = nrm(sub([0, 0, 1], mul(e3, dot([0, 0, 1], e3)))); // anterior
+    let e1 = cross(e3, e2);                      // lateral-left
+    const r = P.roll * Math.PI / 180, c = Math.cos(r), s = Math.sin(r);
+    const e1r = add(mul(e1, c), mul(e2, s)), e2r = add(mul(e2, c), mul(e1, -s));
+    e1 = e1r; e2 = e2r;
+    // origin chosen so that the heart (ventricles + atria) is centred at patient origin
+    const O = mul(e3, -0.6);
+    const toP = q => add(O, add(add(mul(e1, q[0]), mul(e3, q[1])), mul(e2, q[2])));
+    const toL = p => { const d = sub(p, O); return [dot(d, e1), dot(d, e3), dot(d, e2)]; };
+    const dirP = q => add(add(mul(e1, q[0]), mul(e3, q[1])), mul(e2, q[2]));
+    return { e1, e2, e3, O, toP, toL, dirP };
+  }
+
+  // ---------------- spatial hash for neighbour queries ----------------
+  function makeHash(pos, n, cell) {
+    const map = new Map();
+    const key = (i, j, k) => (i * 73856093) ^ (j * 19349663) ^ (k * 83492791);
+    for (let p = 0; p < n; p++) {
+      const k = key(Math.floor(pos[3 * p] / cell), Math.floor(pos[3 * p + 1] / cell), Math.floor(pos[3 * p + 2] / cell));
+      let arr = map.get(k); if (!arr) map.set(k, arr = []); arr.push(p);
+    }
+    function query(x, y, z, r, out) {
+      out.length = 0;
+      const i0 = Math.floor((x - r) / cell), i1 = Math.floor((x + r) / cell);
+      const j0 = Math.floor((y - r) / cell), j1 = Math.floor((y + r) / cell);
+      const k0 = Math.floor((z - r) / cell), k1 = Math.floor((z + r) / cell);
+      const r2 = r * r;
+      for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) for (let k = k0; k <= k1; k++) {
+        const arr = map.get(key(i, j, k)); if (!arr) continue;
+        for (const p of arr) {
+          const dx = pos[3 * p] - x, dy = pos[3 * p + 1] - y, dz = pos[3 * p + 2] - z;
+          const d2 = dx * dx + dy * dy + dz * dz;
+          if (d2 <= r2) out.push(p, d2);
+        }
+      }
+      return out;
+    }
+    return { query };
+  }
+
+  // ---------------- binary heap Dijkstra ----------------
+  function dijkstra(n, adjStart, adjTo, adjW, seeds, t0) {
+    const t = t0 || new Float64Array(n).fill(Infinity);
+    const pred = new Int32Array(n).fill(-1);
+    const heapI = [], heapT = [];
+    const push = (i, v) => { heapI.push(i); heapT.push(v); let c = heapI.length - 1; while (c > 0) { const p = (c - 1) >> 1; if (heapT[p] <= heapT[c]) break; [heapI[p], heapI[c]] = [heapI[c], heapI[p]];[heapT[p], heapT[c]] = [heapT[c], heapT[p]]; c = p; } };
+    const pop = () => { const i = heapI[0], v = heapT[0]; const li = heapI.pop(), lv = heapT.pop(); if (heapI.length) { heapI[0] = li; heapT[0] = lv; let c = 0; for (;;) { const l = 2 * c + 1, r = l + 1; let m = c; if (l < heapI.length && heapT[l] < heapT[m]) m = l; if (r < heapI.length && heapT[r] < heapT[m]) m = r; if (m === c) break; [heapI[m], heapI[c]] = [heapI[c], heapI[m]];[heapT[m], heapT[c]] = [heapT[c], heapT[m]]; c = m; } } return [i, v]; };
+    for (const [i, v] of seeds) if (v < t[i]) { t[i] = v; pred[i] = -2; push(i, v); }
+    while (heapI.length) {
+      const [i, v] = pop(); if (v > t[i]) continue;
+      for (let e = adjStart[i]; e < adjStart[i + 1]; e++) {
+        const j = adjTo[e], nv = v + adjW[e];
+        if (nv < t[j]) { t[j] = nv; pred[j] = i; push(j, nv); }
+      }
+    }
+    return { t, pred };
+  }
+
+  // ---------------- AP shape ----------------
+  // normalised transmembrane potential: 0 = rest, 1 = plateau
+  function apShape(tau, apd, tauUp, tauRep) {
+    if (tau < -8 * tauUp) return 0;
+    const up = 0.5 * (1 + Math.tanh(tau / tauUp));
+    const x = (tau - apd) / tauRep;
+    const rep = x > 30 ? 0 : 1 / (1 + Math.exp(x));
+    // gentle plateau (phase 2) decline, identical shape for all cells
+    return up * rep * (1 - 0.06 * clamp(tau / apd, 0, 1));
+  }
+
+  const TISSUE = { RA: 0, LA: 1, RV: 2, LV: 3, SEP: 4 };
+  const TISSUE_NAMES = ['RA', 'LA', 'RV', 'LV', 'SEP'];
+
+  // =====================================================================
+  //  build(scenario)  – a scenario may override params and hook stages:
+  //   scenario.params        {...}            parameter overrides
+  //   scenario.tissue(pt)    -> modify pt.apd / pt.blocked / pt.vScale   (regional change)
+  //   scenario.conduction(cs)-> modify conduction tree (e.g. cut a bundle)
+  //   scenario.extraEdges(m) -> [[i,j,delay],...]   (e.g. accessory pathway)
+  // =====================================================================
+  function build(scenario = {}) {
+    const T0 = (typeof performance !== 'undefined' ? performance : Date).now();
+    const P = Object.assign({}, DEFAULTS, scenario.params || {});
+    const G = makeGeometry(P);
+    const F = makeFrame(P);
+    const R = rng(12345);
+
+    // ---------- sample tissue points ----------
+    const pts = []; // {l:[local], p:[patient], type, depth, s, w}
+    function sampleBox(h, lo, hi, accept) {
+      for (let x = lo[0]; x <= hi[0]; x += h) for (let y = lo[1]; y <= hi[1]; y += h) for (let z = lo[2]; z <= hi[2]; z += h) {
+        const q = [x + (R() - 0.5) * h * 0.8, y + (R() - 0.5) * h * 0.8, z + (R() - 0.5) * h * 0.8];
+        const d = G.parts(q), t = G.tissue(q, d);
+        const pt = accept(q, d, t);
+        if (pt) { pt.l = q; pt.p = F.toP(q); pt.w = h * h * h; pts.push(pt); }
+      }
+    }
+    // ventricles
+    sampleBox(P.hV, [-5.2, -6.4, -3.2], [3.2, 3.6, 4.4], (q, d, t) => {
+      const s = clamp((q[1] - A.Yapex) / (A.Yb - A.Yapex), 0, 1);
+      if (t.lv < 0) {
+        const inRV = d.dRV < 0;
+        const type = inRV ? TISSUE.SEP : TISSUE.LV;
+        let depth, endoSide;
+        if (inRV) { // septum: endocardium on both sides
+          const a = d.dLVi, b = -d.dLVo; depth = Math.min(a, b) / ((a + b) / 2) * 0.5; endoSide = a < b ? 'L' : 'R';
+        } else { const a = d.dLVi, b = -d.dLVo; depth = a / (a + b); endoSide = 'L'; }
+        return { type, depth: clamp(depth, 0, 1), s, endoSide, dEndo: inRV ? Math.min(d.dLVi, -d.dLVo) : d.dLVi };
+      }
+      if (t.rv < 0) {
+        const a = d.dRV + P.wallRV;
+        return { type: TISSUE.RV, depth: clamp(a / P.wallRV, 0, 1), s, endoSide: 'R', dEndo: a, rvot: d.dCap < 0.3 && q[1] > 0.4 };
+      }
+      return null;
+    });
+    const nV = pts.length;
+    // atria
+    sampleBox(P.hA, [-4.8, A.YaMin, -3.4], [5.6, 6.2, 4.2], (q, d, t) => {
+      if (t.ra < 0 && t.ra <= t.la) return { type: TISSUE.RA, depth: clamp((d.dRA + P.wallA) / P.wallA, 0, 1), s: 1, endoSide: '' };
+      if (t.la < 0) return { type: TISSUE.LA, depth: clamp((d.dLA + P.wallA) / P.wallA, 0, 1), s: 1, endoSide: '' };
+      return null;
+    });
+    const n = pts.length;
+    const pos = new Float32Array(3 * n);
+    pts.forEach((pt, i) => { pos[3 * i] = pt.p[0]; pos[3 * i + 1] = pt.p[1]; pos[3 * i + 2] = pt.p[2]; });
+    const isAtr = i => pts[i].type <= 1;
+
+    // ---------- neighbours (same compartment, not across cavities) ----------
+    const hash = makeHash(pos, n, 0.8);
+    const K = 12, buf = [];
+    const nbr = new Int32Array(n * K).fill(-1);
+    for (let i = 0; i < n; i++) {
+      const h = isAtr(i) ? P.hA : P.hV;
+      hash.query(pos[3 * i], pos[3 * i + 1], pos[3 * i + 2], 2.3 * h, buf);
+      const cand = [];
+      for (let b = 0; b < buf.length; b += 2) { const j = buf[b]; if (j !== i && isAtr(j) === isAtr(i)) cand.push([buf[b + 1], j]); }
+      cand.sort((a, b) => a[0] - b[0]);
+      let c = 0;
+      for (const [, j] of cand) {
+        if (c >= K) break;
+        const mid = mul(add(pts[i].l, pts[j].l), 0.5);
+        if (G.myoSDF(mid) > 0.06) continue; // edge would cross a cavity / outside
+        nbr[i * K + c++] = j;
+      }
+    }
+
+    // ---------- conduction system ----------
+    const L2P = F.toP;
+    const cs = {
+      SA: [-2.4, 5.35, -0.3],
+      AVN: [-0.1, 2.3, -0.9],
+      bachmann: [[-1.7, 4.9, 0.7], [0.2, 5.05, -0.2], [2.0, 4.75, -0.5], [2.45, 3.4, 1.2]],
+      his: [[-0.1, 2.3, -0.9], [-0.95, 1.65, -0.05], [-1.85, 1.35, 0.6]],
+      lbbStem: [[-1.85, 1.35, 0.6], [-1.3, 0.75, 1.0]],
+      fasc: {
+        septal: [[-1.3, 0.75, 1.0], [-1.25, -0.6, 1.0], [-1.15, -1.8, 0.9]],
+        anterior: [[-1.3, 0.75, 1.0], [-0.45, -0.3, 1.55], [0.75, -1.6, 1.4], [1.25, -2.6, 0.75], [0.6, -4.0, 0.3]],
+        posterior: [[-1.3, 0.75, 1.0], [-1.45, -0.2, -0.2], [-0.8, -1.4, -1.25], [0.1, -2.6, -1.35], [0.1, -4.0, -0.6]],
+      },
+      rbb: [[-1.85, 1.35, 0.6], [-2.25, 0.3, 1.6], [-2.35, -1.4, 1.7], [-2.35, -3.0, 1.6], [-2.6, -3.3, 2.5]],
+      blocked: {}, // scenario hook: e.g. {rbb:true}
+    };
+    if (scenario.conduction) scenario.conduction(cs);
+
+    // nearest tissue point of given types
+    function nearest(lq, types, filt) {
+      let best = -1, bd = Infinity;
+      for (let i = 0; i < n; i++) {
+        if (!types.includes(pts[i].type)) continue; if (filt && !filt(pts[i])) continue;
+        const d = len(sub(pts[i].l, lq)); if (d < bd) { bd = d; best = i; }
+      }
+      return best;
+    }
+
+    // ---------- atrial activation ----------
+    const nbrDist = (i, j) => len(sub(pts[i].p, pts[j].p));
+    function distToPolyline(lq, poly) {
+      let m = Infinity;
+      for (let k = 0; k < poly.length - 1; k++) m = Math.min(m, sdCap(lq, poly[k], poly[k + 1], 0));
+      return m;
+    }
+    const tissueMods = pts.map(() => ({ vScale: 1, apdAdd: 0, blocked: false }));
+    if (scenario.tissue) pts.forEach((pt, i) => scenario.tissue(pt, tissueMods[i]));
+
+    const bach = new Uint8Array(n);
+    for (let i = nV; i < n; i++) bach[i] = distToPolyline(pts[i].l, cs.bachmann) < 0.75 ? 1 : 0;
+    // purkinje layer (subendocardial), LV and RV sides separately
+    const purk = new Uint8Array(n); // 1 = LV side, 2 = RV side
+    for (let i = 0; i < nV; i++) {
+      const pt = pts[i];
+      if (pt.dEndo > P.purkDepth) continue;
+      if (pt.endoSide === 'L' && pt.s < P.purkTopLV && !(pt.s > P.purkPostBase && pt.l[2] < P.purkPostZ)) purk[i] = 1; // posterobasal LV: sparse Purkinje -> activated last
+      if (pt.endoSide === 'R' && pt.s <= P.purkTopRV && pt.l[1] < A.Yb + P.purkRVOT) purk[i] = 2;
+    }
+
+    // build CSR graph
+    const edges = [];
+    for (let i = 0; i < n; i++) for (let c = 0; c < K; c++) {
+      const j = nbr[i * K + c]; if (j < 0) continue;
+      if (tissueMods[i].blocked || tissueMods[j].blocked) continue;
+      const d = nbrDist(i, j);
+      let v;
+      if (isAtr(i)) v = (bach[i] && bach[j]) ? P.vBach : P.vAtr;
+      else v = (purk[i] && purk[i] === purk[j]) ? P.vPurk : P.vMyo;
+      v *= Math.min(tissueMods[i].vScale, tissueMods[j].vScale);
+      edges.push([i, j, d / v], [j, i, d / v]);
+    }
+    if (scenario.extraEdges) for (const [i, j, w] of scenario.extraEdges({ pts, nearest, TISSUE })) edges.push([i, j, w], [j, i, w]);
+    // extra Purkinje edges (longer reach, same side) so the network is continuous
+    {
+      const pb = [];
+      for (let i = 0; i < nV; i++) if (purk[i]) {
+        hash.query(pos[3 * i], pos[3 * i + 1], pos[3 * i + 2], 0.75, pb);
+        for (let b = 0; b < pb.length; b += 2) { const j = pb[b]; if (j > i && purk[j] === purk[i]) { const d = Math.sqrt(pb[b + 1]); const mid = mul(add(pts[i].l, pts[j].l), 0.5); if (G.myoSDF(mid) > 0.06) continue; edges.push([i, j, d / P.vPurk], [j, i, d / P.vPurk]); } }
+      }
+    }
+    const adjStart = new Int32Array(n + 1);
+    for (const e of edges) adjStart[e[0] + 1]++;
+    for (let i = 0; i < n; i++) adjStart[i + 1] += adjStart[i];
+    const fill = adjStart.slice(0, n), adjTo = new Int32Array(edges.length), adjW = new Float64Array(edges.length);
+    for (const e of edges) { const k = fill[e[0]]++; adjTo[k] = e[1]; adjW[k] = e[2]; }
+
+    const iSA = nearest(cs.SA, [TISSUE.RA]);
+    const saSeeds = [];
+    for (let i = nV; i < n; i++) { const d = len(sub(pts[i].l, pts[iSA].l)); if (d < 0.45) saSeeds.push([i, d / P.vAtr]); }
+    const atr = dijkstra(n, adjStart, adjTo, adjW, saSeeds);
+    const iAVN = nearest(cs.AVN, [TISSUE.RA, TISSUE.LA]);
+    const tAVin = atr.t[iAVN];
+
+    // ---------- His-Purkinje tree times ----------
+    const tree = []; // segments for drawing: {a:[P], b:[P], ta, tb, kind}
+    function walk(poly, t0, v, kind) {
+      let t = t0; const out = [[poly[0], t]];
+      for (let k = 0; k < poly.length - 1; k++) {
+        const dt = len(sub(poly[k + 1], poly[k])) / v;
+        tree.push({ a: L2P(poly[k]), b: L2P(poly[k + 1]), ta: t, tb: t + dt, kind });
+        t += dt; out.push([poly[k + 1], t]);
+      }
+      return out;
+    }
+    // atrial pathways (drawn only; activation comes from the myocardium)
+    tree.push({ a: L2P(cs.bachmann[0]), b: L2P(cs.bachmann[1]), ta: 10, tb: 20, kind: 'bach' });
+    for (let k = 1; k < cs.bachmann.length - 1; k++) tree.push({ a: L2P(cs.bachmann[k]), b: L2P(cs.bachmann[k + 1]), ta: 20 + k * 10, tb: 30 + k * 10, kind: 'bach' });
+    const tHis = tAVin + P.avDelay;
+    tree.push({ a: L2P(cs.AVN), b: L2P(cs.AVN), ta: tAVin, tb: tHis, kind: 'avn' });
+    const hisPath = walk(cs.his, tHis, P.vHis, 'his');
+    const tBif = hisPath[hisPath.length - 1][1];
+    const seedsV = [];
+    function seedAlong(path, everyCm, radius) {
+      for (let k = 0; k < path.length - 1; k++) {
+        const [a, ta] = path[k], [b, tb] = path[k + 1];
+        const L = len(sub(b, a)), m = Math.max(1, Math.ceil(L / everyCm));
+        for (let s = 0; s <= m; s++) {
+          if (k === 0 && s === 0 && path === undefined) continue;
+          const f = s / m, q = add(a, mul(sub(b, a), f)), tq = ta + (tb - ta) * f;
+          for (let i = 0; i < nV; i++) {
+            if (!purk[i]) continue;
+            const d = len(sub(pts[i].l, q)); if (d < radius) seedsV.push([i, tq + 2 + d / P.vMyo]);
+          }
+        }
+      }
+    }
+    if (!cs.blocked.lbb) {
+      const stem = walk(cs.lbbStem, tBif, P.vBundle, 'lbb');
+      const tL = stem[stem.length - 1][1];
+      for (const [name, poly] of Object.entries(cs.fasc)) {
+        if (cs.blocked[name]) continue;
+        const path = walk(poly, tL, P.vBundle, 'lbb');
+        // terminal branches insert along the distal 2/3 of each fascicle
+        seedAlong(path.slice(name === 'septal' ? 1 : P.fascSeedFrom), 0.5, 0.55);
+      }
+    }
+    if (!cs.blocked.rbb) {
+      const path = walk(cs.rbb, tBif + P.rbbDelay, P.vBundle, 'rbb');
+      seedAlong(path.slice(P.rbbSeedFrom), 0.5, 0.6); // lower septal RV surface + moderator band / anterior papillary muscle
+    }
+    const ven = dijkstra(n, adjStart, adjTo, adjW, seedsV);
+    const tAct = new Float64Array(n);
+    for (let i = 0; i < n; i++) tAct[i] = i < nV ? ven.t[i] : atr.t[i];
+    const pred = new Int32Array(n);
+    for (let i = 0; i < n; i++) pred[i] = i < nV ? ven.pred[i] : atr.pred[i];
+    // shift to displayed time
+    for (let i = 0; i < n; i++) tAct[i] += P.tStart;
+    for (const s of tree) { s.ta += P.tStart; s.tb += P.tStart; }
+
+    // Purkinje network drawing: shortest-path tree edges inside the Purkinje layer
+    const purkSegs = [];
+    for (let i = 0; i < nV; i++) { const j = pred[i]; if (j >= 0 && purk[i] && purk[j]) purkSegs.push([j, i]); }
+    // seeds: connect to nearest tree end for drawing
+    // ---------- APD ----------
+    const apd = new Float64Array(n);
+    for (let i = 0; i < n; i++) {
+      const pt = pts[i];
+      if (isAtr(i)) apd[i] = P.apdA;
+      else apd[i] = P.apdV + P.apdEndo * (1 - pt.depth) + P.apdBase * pt.s + (pt.type === TISSUE.RV ? P.apdRV : 0);
+      apd[i] += tissueMods[i].apdAdd;
+    }
+    const tauRep = new Float64Array(n);
+    for (let i = 0; i < n; i++) tauRep[i] = isAtr(i) ? P.tauRepA : P.tauRepV;
+
+    // ---------- least-squares gradient operator ----------
+    // grad f_i = sum_j G_ij (f_j - f_i)
+    const Gop = new Float64Array(n * K * 3);
+    for (let i = 0; i < n; i++) {
+      let a00 = 0, a01 = 0, a02 = 0, a11 = 0, a12 = 0, a22 = 0;
+      const rows = [];
+      for (let c = 0; c < K; c++) {
+        const j = nbr[i * K + c]; if (j < 0) { rows.push(null); continue; }
+        const dx = pos[3 * j] - pos[3 * i], dy = pos[3 * j + 1] - pos[3 * i + 1], dz = pos[3 * j + 2] - pos[3 * i + 2];
+        const wgt = 1 / (dx * dx + dy * dy + dz * dz);
+        rows.push([dx, dy, dz, wgt]);
+        a00 += wgt * dx * dx; a01 += wgt * dx * dy; a02 += wgt * dx * dz; a11 += wgt * dy * dy; a12 += wgt * dy * dz; a22 += wgt * dz * dz;
+      }
+      const lam = 0.02 * (a00 + a11 + a22) + 1e-9;
+      a00 += lam; a11 += lam; a22 += lam;
+      // invert symmetric 3x3
+      const c00 = a11 * a22 - a12 * a12, c01 = a02 * a12 - a01 * a22, c02 = a01 * a12 - a02 * a11;
+      const c11 = a00 * a22 - a02 * a02, c12 = a01 * a02 - a00 * a12, c22 = a00 * a11 - a01 * a01;
+      const det = a00 * c00 + a01 * c01 + a02 * c02;
+      for (let c = 0; c < K; c++) {
+        const r = rows[c]; if (!r) continue;
+        const [dx, dy, dz, wgt] = r;
+        Gop[(i * K + c) * 3] = (c00 * dx + c01 * dy + c02 * dz) * wgt / det;
+        Gop[(i * K + c) * 3 + 1] = (c01 * dx + c11 * dy + c12 * dz) * wgt / det;
+        Gop[(i * K + c) * 3 + 2] = (c02 * dx + c12 * dy + c22 * dz) * wgt / det;
+      }
+    }
+    function gradOf(f, i) {
+      const g = [0, 0, 0];
+      for (let c = 0; c < K; c++) { const j = nbr[i * K + c]; if (j < 0) continue; const df = f[j] - f[i]; if (!isFinite(df)) continue; g[0] += Gop[(i * K + c) * 3] * df; g[1] += Gop[(i * K + c) * 3 + 1] * df; g[2] += Gop[(i * K + c) * 3 + 2] * df; }
+      return g;
+    }
+    // propagation direction = normalised grad(t_act)
+    const propDir = new Float32Array(3 * n), repDir = new Float32Array(3 * n);
+    const tRep = new Float64Array(n);
+    for (let i = 0; i < n; i++) tRep[i] = tAct[i] + apd[i];
+    for (let i = 0; i < n; i++) {
+      const g = nrm(gradOf(tAct, i)); propDir.set(g, 3 * i);
+      const r = nrm(gradOf(tRep, i)); repDir.set(r, 3 * i);
+    }
+    // H(t) = -sum_i w_i grad Vm_i  ==  sum_j C_j Vm_j
+    const Cw = new Float64Array(3 * n);
+    for (let i = 0; i < n; i++) {
+      const w = pts[i].w;
+      for (let c = 0; c < K; c++) {
+        const j = nbr[i * K + c]; if (j < 0) continue;
+        for (let d = 0; d < 3; d++) { const g = Gop[(i * K + c) * 3 + d] * w; Cw[3 * j + d] -= g; Cw[3 * i + d] += g; }
+      }
+    }
+    const nT = Math.round(P.beatLen / P.dt) + 1;
+    const Hraw = new Float64Array(3 * nT);
+    for (let i = 0; i < n; i++) {
+      if (!isFinite(tAct[i])) continue;
+      const cx = Cw[3 * i], cy = Cw[3 * i + 1], cz = Cw[3 * i + 2];
+      const ta = tAct[i], ad = apd[i], tr = tauRep[i];
+      const k0 = Math.max(0, Math.floor((ta - 10 * P.tauUp) / P.dt));
+      for (let k = k0; k < nT; k++) {
+        const v = apShape(k * P.dt - ta, ad, P.tauUp, tr);
+        if (v === 0 && k * P.dt > ta) break;
+        Hraw[3 * k] += cx * v; Hraw[3 * k + 1] += cy * v; Hraw[3 * k + 2] += cz * v;
+      }
+    }
+
+    // light temporal smoothing (body volume conductor + ECG filter), applied to H itself so 3D view and traces agree
+    if (P.smoothMs > 0) {
+      const sg = P.smoothMs / P.dt, R2 = Math.ceil(3 * sg), ker = [];
+      for (let k = -R2; k <= R2; k++) ker.push(Math.exp(-0.5 * k * k / (sg * sg)));
+      const ks = ker.reduce((a, b) => a + b, 0), tmp = Float64Array.from(Hraw);
+      for (let k = 0; k < nT; k++) for (let d = 0; d < 3; d++) {
+        let acc = 0; for (let j = -R2; j <= R2; j++) acc += ker[j + R2] * tmp[3 * clamp(k + j, 0, nT - 1) + d];
+        Hraw[3 * k + d] = acc / ks;
+      }
+    }
+    // ---------- lead vectors ----------
+    const ang = d => { const r = d * Math.PI / 180; return [Math.cos(r), -Math.sin(r), 0]; };
+    const LI = ang(0), LII = ang(60), LIII = sub(LII, LI);
+    const leads = {
+      I: LI, II: LII, III: LIII,
+      aVR: mul(add(LI, LII), -0.5), aVL: mul(sub(LI, LIII), 0.5), aVF: mul(add(LII, LIII), 0.5),
+    };
+    // precordial electrodes on a simple torso (cm, patient frame, origin = heart centre)
+    const electrodes = {
+      V1: [-4.0, 2.0, 6.6], V2: [1.2, 2.0, 6.8], V4: [7.8, -1.6, 5.4],
+      V5: [12.0, -1.6, 1.8], V6: [13.8, -1.6, -3.4],
+    };
+    electrodes.V3 = mul(add(electrodes.V2, electrodes.V4), 0.5);
+    for (const v of ['V1', 'V2', 'V3', 'V4', 'V5', 'V6']) leads[v] = nrm(electrodes[v]);
+    const LEAD_NAMES = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6'];
+
+    // ---------- events (from the model's own activation data) ----------
+    let aMin = Infinity, aMax = -Infinity, vMin = Infinity, vMax = -Infinity, nUnact = 0;
+    for (let i = 0; i < n; i++) {
+      if (!isFinite(tAct[i])) { nUnact++; continue; }
+      if (isAtr(i)) { aMin = Math.min(aMin, tAct[i]); aMax = Math.max(aMax, tAct[i]); }
+      else { vMin = Math.min(vMin, tAct[i]); vMax = Math.max(vMax, tAct[i]); }
+    }
+    // calibrate gain on lead II QRS
+    const qrsOn = vMin - 3, qrsOff = vMax + 6;
+    let mx = 0;
+    for (let k = Math.floor(qrsOn / P.dt); k <= Math.ceil(qrsOff / P.dt); k++) mx = Math.max(mx, Math.abs(dot([Hraw[3 * k], Hraw[3 * k + 1], Hraw[3 * k + 2]], LII)));
+    const gain = P.targetII / (mx || 1);
+    const H = new Float64Array(3 * nT);
+    for (let k = 0; k < 3 * nT; k++) H[k] = Hraw[k] * gain;
+    const Hat = t => { const f = clamp(t / P.dt, 0, nT - 1), k = Math.floor(f), u = f - k, k2 = Math.min(k + 1, nT - 1); return [H[3 * k] * (1 - u) + H[3 * k2] * u, H[3 * k + 1] * (1 - u) + H[3 * k2 + 1] * u, H[3 * k + 2] * (1 - u) + H[3 * k2 + 2] * u]; };
+    const ecg = {};
+    for (const nm of LEAD_NAMES) { const L = leads[nm], a = new Float32Array(nT); for (let k = 0; k < nT; k++) a[k] = H[3 * k] * L[0] + H[3 * k + 1] * L[1] + H[3 * k + 2] * L[2]; ecg[nm] = a; }
+    const Hmag = k => Math.hypot(H[3 * k], H[3 * k + 1], H[3 * k + 2]);
+    let tPeakK = 0, tPeak = 0;
+    for (let k = Math.ceil((qrsOff + 60) / P.dt); k < nT; k++) if (Hmag(k) > tPeak) { tPeak = Hmag(k); tPeakK = k; }
+    let tEndK = tPeakK; while (tEndK < nT - 1 && Hmag(tEndK) > 0.05 * tPeak) tEndK++;
+    let tOnK = Math.ceil((qrsOff + 10) / P.dt); while (tOnK < tPeakK && Hmag(tOnK) < 0.15 * tPeak) tOnK++;
+    let rPeakK = 0, rMax = 0;
+    for (let k = Math.floor(qrsOn / P.dt); k <= Math.ceil(qrsOff / P.dt); k++) if (Hmag(k) > rMax) { rMax = Hmag(k); rPeakK = k; }
+    let pPeakK = 0, pMax = 0;
+    for (let k = Math.floor(aMin / P.dt); k <= Math.ceil((aMax + 6) / P.dt); k++) if (Hmag(k) > pMax) { pMax = Hmag(k); pPeakK = k; }
+    const ev = {
+      pOn: aMin - 2, pOff: aMax + 6, pPeak: pPeakK * P.dt,
+      avIn: tAVin + P.tStart, his: tHis + P.tStart,
+      qrsOn, qrsOff, rPeak: rPeakK * P.dt,
+      tOn: tOnK * P.dt, tPeak: tPeakK * P.dt, tEnd: tEndK * P.dt,
+      septalEnd: vMin + 14,
+    };
+
+    const model = {
+      P, A, F, G, n, nV, K, pts, pos, nbr, tAct, apd, tauRep, tRep, propDir, repDir, purk, bach,
+      tree, purkSegs, iSA, iAVN, cs: { ...cs, SA_P: L2P(cs.SA), AVN_P: L2P(cs.AVN) },
+      H, Hat, nT, ecg, leads, electrodes, LEAD_NAMES, ev, gain, nUnact,
+      vm: (i, t) => apShape(t - tAct[i], apd[i], P.tauUp, tauRep[i]),
+      TISSUE, TISSUE_NAMES, buildMs: 0,
+    };
+    model.buildMs = (typeof performance !== 'undefined' ? performance : Date).now() - T0;
+    return model;
+  }
+
+  // ---------------- numeric self-check of the 12-lead ----------------
+  function selfCheck(m) {
+    const { ecg, ev, P } = m;
+    const at = (nm, t) => ecg[nm][clamp(Math.round(t / P.dt), 0, m.nT - 1)];
+    const win = (nm, a, b) => { const out = []; for (let k = Math.ceil(a / P.dt); k <= Math.floor(b / P.dt); k++) out.push(ecg[nm][k]); return out; };
+    const area = (nm, a, b) => win(nm, a, b).reduce((s, v) => s + v, 0) * P.dt;
+    const base = nm => at(nm, ev.pOn - 10);
+    const res = { leads: {}, checks: [] };
+    for (const nm of m.LEAD_NAMES) {
+      const b = base(nm);
+      const q = win(nm, ev.qrsOn, ev.qrsOff).map(v => v - b);
+      const R = Math.max(0, ...q), S = Math.max(0, ...q.map(v => -v));
+      const kR = q.indexOf(R);
+      const qd = Math.max(0, ...q.slice(0, Math.max(1, kR)).map(v => -v)); // negative deflection before R
+      const pw = win(nm, ev.pOn, ev.pOff).map(v => v - b);
+      const pAmp = pw.reduce((a, v) => Math.abs(v) > Math.abs(a) ? v : a, 0);
+      const tw = win(nm, ev.tOn - 20, ev.tEnd).map(v => v - b);
+      const tAmp = tw.reduce((a, v) => Math.abs(v) > Math.abs(a) ? v : a, 0);
+      res.leads[nm] = {
+        P: +pAmp.toFixed(3), q: +qd.toFixed(3), R: +R.toFixed(3), S: +S.toFixed(3), RS: +(R / Math.max(S, 1e-3)).toFixed(2),
+        ST20: +(at(nm, ev.qrsOff + 20) - b).toFixed(3), T: +tAmp.toFixed(3), qrsArea: +area(nm, ev.qrsOn, ev.qrsOff).toFixed(1),
+      };
+    }
+    const L = res.leads;
+    // frontal axis from H integrated over QRS
+    let sx = 0, sy = 0;
+    for (let k = Math.ceil(ev.qrsOn / P.dt); k <= Math.floor(ev.qrsOff / P.dt); k++) { sx += m.H[3 * k]; sy += m.H[3 * k + 1]; }
+    const axis = Math.atan2(-sy, sx) * 180 / Math.PI;
+    const axisIaVF = Math.atan2(L.aVF.qrsArea / 0.866, L.I.qrsArea) * 180 / Math.PI;
+    const PR = ev.qrsOn - ev.pOn, QRS = ev.qrsOff - ev.qrsOn, QT = ev.tEnd - ev.qrsOn;
+    const firstRS = ['V1', 'V2', 'V3', 'V4', 'V5', 'V6'].find(v => L[v].RS >= 1);
+    res.summary = { PR: Math.round(PR), QRS: Math.round(QRS), QT: Math.round(QT), axis: Math.round(axis), axisIaVF: Math.round(axisIaVF), transition: firstRS, P_II: L.II.P, R_II: L.II.R, T_II: L.II.T, gain: m.gain, nPoints: m.n, nUnactivated: m.nUnact, buildMs: Math.round(m.buildMs) };
+    const c = (name, ok, val) => res.checks.push({ name, ok: !!ok, val });
+    c('PR 140–180 ms', PR >= 140 && PR <= 180, Math.round(PR));
+    c('QRS 80–100 ms', QRS >= 80 && QRS <= 100, Math.round(QRS));
+    c('QT 360–420 ms', QT >= 360 && QT <= 420, Math.round(QT));
+    c('frontal QRS axis +30…+75°', axis >= 30 && axis <= 75, Math.round(axis));
+    c('P upright I, II, aVF', L.I.P > 0.02 && L.II.P > 0.05 && L.aVF.P > 0.02, [L.I.P, L.II.P, L.aVF.P].join(' / '));
+    c('P inverted aVR', L.aVR.P < -0.02, L.aVR.P);
+    c('P(II) 0.05–0.25 mV', L.II.P >= 0.05 && L.II.P <= 0.25, L.II.P);
+    c('II: dominant R, small s', L.II.R > 0.8 && L.II.S < 0.4 * L.II.R, `R ${L.II.R} S ${L.II.S}`);
+    c('II: upright T', L.II.T > 0.1, L.II.T);
+    c('aVR: P, QRS, T negative', L.aVR.P < 0 && L.aVR.R < 0.15 && L.aVR.S > 0.4 && L.aVR.T < 0, `R ${L.aVR.R} S ${L.aVR.S} T ${L.aVR.T}`);
+    c('V1: rS', L.V1.R > 0.03 && L.V1.S > 2 * L.V1.R, `r ${L.V1.R} S ${L.V1.S}`);
+    c('transition V3–V4', firstRS === 'V3' || firstRS === 'V4', firstRS);
+    c('V5, V6: qR', L.V5.q > 0.02 && L.V6.q > 0.02 && L.V5.RS > 1.5 && L.V6.RS > 1.5, `q ${L.V5.q}/${L.V6.q}  R/S ${L.V5.RS}/${L.V6.RS}`);
+    c('small septal q in I, aVL', L.I.q > 0.01 && L.aVL.q > 0.01, `${L.I.q} / ${L.aVL.q}`);
+    c('V5, V6, I, II, V3, V4: upright T', ['I', 'II', 'V3', 'V4', 'V5', 'V6'].every(v => L[v].T > 0.05), ['I', 'II', 'V3', 'V4', 'V5', 'V6'].map(v => L[v].T).join(' / '));
+    const stMax = Math.max(...m.LEAD_NAMES.map(v => Math.abs(L[v].ST20)));
+    c('ST isoelectric (|ST@J+20| < 0.1 mV)', stMax < 0.1, +stMax.toFixed(3));
+    res.pass = res.checks.every(x => x.ok);
+    return res;
+  }
+
+  return { build, selfCheck, DEFAULTS, apShape, TISSUE, TISSUE_NAMES };
+})();
+/*MODEL-END*/
+
+// ---------------------------------------------------------------------
+// Scenarios: the normal heart only. Future pathologies plug in here as
+// objects that modify the model (see HeartModel.build docs), e.g.
+//   rbbb:   { conduction: cs => { cs.blocked.rbb = true } }
+//   lafb:   { conduction: cs => { cs.blocked.anterior = true } }
+//   infarct:{ tissue: (pt, mod) => { if (inRegion(pt)) mod.blocked = true } }
+//   wpw:    { extraEdges: m => [[atrialIdx, ventricularIdx, delay]] }
+//   hyperK / ischemia: { tissue: (pt, mod) => { mod.apdAdd = -40 } }
+// ---------------------------------------------------------------------
+const SCENARIOS = { normal: { name: 'לב תקין' } };
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { MarchingCubes } from 'three/addons/objects/MarchingCubes.js';
+import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
+
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const RLM = '‏';
+const ltr = s => `<span class="ltr">${s}</span>`;
+const fmtmV = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(2) + ' mV';
+
+// ===================================================== model
+const T0 = performance.now();
+const scenarioKey = 'normal';
+const M = HeartModel.build(SCENARIOS[scenarioKey]);
+const CHECK = HeartModel.selfCheck(M);
+const EV = M.ev, BEAT = M.P.beatLen;
+console.log('[heart-vector] model build', Math.round(M.buildMs), 'ms, points', M.n);
+console.log('[heart-vector] 12-lead self-check', CHECK.pass ? 'PASS' : 'FAIL', JSON.stringify(CHECK.summary));
+CHECK.checks.forEach(c => console.log(`[heart-vector]   ${c.ok ? 'PASS' : 'FAIL'}  ${c.name}  (${c.val})`));
+
+// ===================================================== state + URL hash
+const LEADS = M.LEAD_NAMES;
+const S = {
+  t: EV.rPeak, lead: 'II', view: 'front', playing: false, speed: 0.25, loop: true,
+  cs: true, arrows: true, vec: true, axis: true, vloop: true, labels: true, opacity: 0.38,
+  clip: 'off', clipAt: 0,
+};
+const NAMED_T = () => ({
+  p: EV.pPeak, pr: (EV.pOff + EV.qrsOn) / 2, q: (EV.qrsOn + EV.septalEnd) / 2 + 1, qrs: (EV.qrsOn + EV.septalEnd) / 2 + 1,
+  r: EV.rPeak, s: (EV.rPeak + EV.qrsOff) / 2 + 4, st: (EV.qrsOff + EV.tOn) / 2, t: EV.tPeak, tp: (EV.tEnd + BEAT) / 2, rest: 20,
+});
+function parseHash() {
+  const h = new URLSearchParams(location.hash.replace(/^#/, ''));
+  const out = {};
+  if (h.has('t')) {
+    const raw = h.get('t').toLowerCase(), nt = NAMED_T();
+    if (raw in nt) out.t = nt[raw];
+    else { const v = parseFloat(raw); if (isFinite(v)) out.t = v <= 2 ? v * 1000 : v; }
+  }
+  if (h.has('lead')) { const l = LEADS.find(x => x.toLowerCase() === h.get('lead').toLowerCase()); if (l) out.lead = l; }
+  if (h.has('view') && ['front', 'left', 'inferior', 'posterior', 'lead', 'cut'].includes(h.get('view'))) out.view = h.get('view');
+  if (h.has('clip') && ['off', 'frontal', 'transverse', 'long'].includes(h.get('clip'))) out.clip = h.get('clip');
+  if (h.has('clipAt')) out.clipAt = clamp(parseFloat(h.get('clipAt')) || 0, -8, 8);
+  if (h.has('opacity')) out.opacity = clamp(parseFloat(h.get('opacity')) || 0, 0, 1);
+  for (const k of ['cs', 'arrows', 'vec', 'axis', 'vloop', 'labels']) if (h.has(k)) out[k] = h.get(k) !== '0';
+  if (h.has('play')) out.playing = h.get('play') !== '0';
+  if (h.has('speed')) { const v = parseFloat(h.get('speed')); if ([0.1, 0.25, 1].includes(v)) out.speed = v; }
+  if (h.has('theme') && ['light', 'dark'].includes(h.get('theme'))) out.theme = h.get('theme');
+  out.help = h.get('help');
+  out.debug = h.get('debug') === '1';
+  out.solo = h.get('solo') === '1';
+  out.selftest = h.get('selftest') === '1';
+  return out;
+}
+let hashTimer = 0;
+function writeHash() {
+  clearTimeout(hashTimer);
+  hashTimer = setTimeout(() => {
+    const h = new URLSearchParams(location.hash.replace(/^#/, ''));
+    h.set('t', (S.t / 1000).toFixed(3)); h.set('lead', S.lead); h.set('view', S.view);
+    if (S.clip !== 'off') { h.set('clip', S.clip); h.set('clipAt', S.clipAt.toFixed(1)); } else { h.delete('clip'); h.delete('clipAt'); }
+    history.replaceState(null, '', '#' + h.toString());
+  }, 350);
+}
+
+// ===================================================== theme
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } },
+};
+const THEME_LABEL = { auto: 'אוטומטית', light: 'בהירה', dark: 'כהה' };
+let themeMode = store.get('hv_theme') || 'auto';
+function applyTheme(mode) {
+  themeMode = mode;
+  if (mode === 'auto') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', mode);
+  $('themeBtn').textContent = 'ערכת צבע: ' + THEME_LABEL[mode];
+}
+const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+let C = {};
+function readColors() {
+  const names = ['bg', 'surface', 'surface-2', 'ink', 'ink-2', 'ink-3', 'line', 'paper', 'grid-minor', 'grid-major', 'trace', 'cursor',
+    'c-rest', 'c-depol', 'c-plateau', 'c-repol', 'c-vec', 'c-pos', 'c-neg', 'c-axis', 'c-p', 'c-qrs', 'c-t', 'c-cs', 'accent'];
+  for (const n of names) C[n] = cssVar('--' + n);
+  C.dark = document.documentElement.getAttribute('data-theme') === 'dark' ||
+    (document.documentElement.getAttribute('data-theme') !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+}
+
+// ===================================================== three.js scene
+const canvas = $('gl'), stageEl = $('stage');
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: false });
+} catch (e) {
+  $('loading').textContent = 'הדפדפן לא תומך ב-WebGL – לא ניתן להציג את התלת-ממד.';
+  throw e;
+}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.localClippingEnabled = true;
+renderer.setClearColor(0x000000, 0);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(32, 1, 0.5, 400);
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true; controls.dampingFactor = 0.12;
+controls.minDistance = 14; controls.maxDistance = 120;
+controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
+
+scene.add(new THREE.HemisphereLight(0xfff4ee, 0x3a2a2a, 1.25));
+const key = new THREE.DirectionalLight(0xffffff, 1.6); key.position.set(-8, 14, 18); scene.add(key);
+const rim = new THREE.DirectionalLight(0xffe0d0, 0.7); rim.position.set(12, -6, -14); scene.add(rim);
+const camLight = new THREE.PointLight(0xffffff, 18, 0, 1.2); camera.add(camLight); scene.add(camera);
+
+const clipPlane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0);
+const clipMats = [];   // materials affected by the section plane
+const V3 = (a) => new THREE.Vector3(a[0], a[1], a[2]);
+
+// ---------- myocardial surface (marching cubes on the model SDF) ----------
+let E = 0; for (let i = 0; i < M.n; i++) E = Math.max(E, Math.abs(M.pos[3 * i]), Math.abs(M.pos[3 * i + 1]), Math.abs(M.pos[3 * i + 2]));
+E += 1.2;
+const RES = 84;
+const surfMat = new THREE.MeshStandardMaterial({ vertexColors: true, transparent: true, opacity: S.opacity, roughness: 0.52, metalness: 0.0, side: THREE.DoubleSide, depthWrite: false });
+clipMats.push(surfMat);
+let surface, surfNear, surfColors;
+{
+  const mc = new MarchingCubes(RES, surfMat, false, false, 400000);
+  mc.isolation = 0;
+  const half = RES / 2, f = mc.field;
+  for (let z = 0; z < RES; z++) for (let y = 0; y < RES; y++) for (let x = 0; x < RES; x++) {
+    const p = [(x - half) / half * E, (y - half) / half * E, (z - half) / half * E];
+    // render the atrial wall slightly thicker than sampled so the thin shells survive the grid resolution
+    f[x + y * RES + z * RES * RES] = -M.G.myoSDF(M.F.toL(p), 0.42);
+  }
+  mc.update();
+  const cnt = mc.count;
+  let g = new THREE.BufferGeometry();
+  const pos = new Float32Array(cnt * 3), nor = new Float32Array(cnt * 3);
+  for (let i = 0; i < cnt * 3; i++) { pos[i] = mc.positionArray[i] * E; nor[i] = mc.normalArray[i]; }
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+  g = mergeVertices(g, 1e-4);
+  // Taubin smoothing (shrink-free Laplacian) to remove the voxel stair-steps
+  {
+    const P = g.attributes.position.array, idx = g.index.array, nv = P.length / 3;
+    const nb = Array.from({ length: nv }, () => new Set());
+    for (let i = 0; i < idx.length; i += 3) { const a = idx[i], b = idx[i + 1], c = idx[i + 2]; nb[a].add(b).add(c); nb[b].add(a).add(c); nb[c].add(a).add(b); }
+    const nbA = nb.map(x => Int32Array.from(x)), tmp = new Float32Array(P.length);
+    for (let it = 0; it < 6; it++) {
+      const f = it % 2 ? -0.53 : 0.5;
+      for (let v = 0; v < nv; v++) {
+        const n = nbA[v]; if (!n.length) { tmp[3 * v] = P[3 * v]; tmp[3 * v + 1] = P[3 * v + 1]; tmp[3 * v + 2] = P[3 * v + 2]; continue; }
+        let x = 0, y = 0, z = 0; for (const j of n) { x += P[3 * j]; y += P[3 * j + 1]; z += P[3 * j + 2]; }
+        const k = 1 / n.length;
+        tmp[3 * v] = P[3 * v] + f * (x * k - P[3 * v]); tmp[3 * v + 1] = P[3 * v + 1] + f * (y * k - P[3 * v + 1]); tmp[3 * v + 2] = P[3 * v + 2] + f * (z * k - P[3 * v + 2]);
+      }
+      P.set(tmp);
+    }
+  }
+  g.computeVertexNormals();
+  const nv = g.attributes.position.count;
+  surfColors = new Float32Array(nv * 3);
+  g.setAttribute('color', new THREE.BufferAttribute(surfColors, 3));
+  // nearest tissue point for every vertex (so the surface shows the local electrical state)
+  const cell = 1.0, grid = new Map(), keyOf = (a, b, c) => a + ',' + b + ',' + c;
+  for (let i = 0; i < M.n; i++) { const k = keyOf(Math.floor(M.pos[3 * i] / cell), Math.floor(M.pos[3 * i + 1] / cell), Math.floor(M.pos[3 * i + 2] / cell)); (grid.get(k) || grid.set(k, []).get(k)).push(i); }
+  surfNear = new Int32Array(nv);
+  const P = g.attributes.position.array;
+  for (let v = 0; v < nv; v++) {
+    const x = P[3 * v], y = P[3 * v + 1], z = P[3 * v + 2];
+    const cx = Math.floor(x / cell), cy = Math.floor(y / cell), cz = Math.floor(z / cell);
+    let best = 0, bd = Infinity;
+    for (let r = 1; r <= 3 && bd === Infinity; r++)
+      for (let a = -r; a <= r; a++) for (let b = -r; b <= r; b++) for (let c = -r; c <= r; c++) {
+        const arr = grid.get(keyOf(cx + a, cy + b, cz + c)); if (!arr) continue;
+        for (const i of arr) { const d = (M.pos[3 * i] - x) ** 2 + (M.pos[3 * i + 1] - y) ** 2 + (M.pos[3 * i + 2] - z) ** 2; if (d < bd) { bd = d; best = i; } }
+      }
+    surfNear[v] = best;
+  }
+  surface = new THREE.Mesh(g, surfMat);
+  surface.renderOrder = 2;
+  scene.add(surface);
+  mc.geometry.dispose();
+}
+
+// ---------- tissue points (instanced) ----------
+const ptGeo = new THREE.IcosahedronGeometry(0.105, 0);
+const ptMat = new THREE.MeshStandardMaterial({ roughness: 0.6, metalness: 0 });
+clipMats.push(ptMat);
+const points = new THREE.InstancedMesh(ptGeo, ptMat, M.n);
+points.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+points.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(M.n * 3), 3);
+points.instanceColor.setUsage(THREE.DynamicDrawUsage);
+points.frustumCulled = false;
+scene.add(points);
+
+// ---------- local wavefront arrows ----------
+function arrowGeometry(len, shaftR, headR, headL) {
+  const shaft = new THREE.CylinderGeometry(shaftR, shaftR, len - headL, 6); shaft.translate(0, (len - headL) / 2 - len / 2, 0);
+  const head = new THREE.ConeGeometry(headR, headL, 10); head.translate(0, len - headL / 2 - len / 2, 0);
+  const g = new THREE.BufferGeometry();
+  const merge = [shaft, head].map(x => x.toNonIndexed());
+  const n = merge.reduce((s, x) => s + x.attributes.position.count, 0);
+  const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3); let o = 0;
+  for (const x of merge) { pos.set(x.attributes.position.array, o * 3); nor.set(x.attributes.normal.array, o * 3); o += x.attributes.position.count; }
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+  return g;
+}
+const ARROW_MAX = 520;
+const arrowMat = new THREE.MeshStandardMaterial({ roughness: 0.4, metalness: 0, emissive: 0x000000 });
+clipMats.push(arrowMat);
+const arrows = new THREE.InstancedMesh(arrowGeometry(0.95, 0.045, 0.13, 0.32), arrowMat, ARROW_MAX);
+arrows.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+arrows.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(ARROW_MAX * 3), 3);
+arrows.frustumCulled = false; arrows.renderOrder = 3;
+scene.add(arrows);
+// fixed random subsample (so arrows don't flicker): ~1 point in 3 can carry an arrow
+const arrowEligible = new Uint8Array(M.n);
+{ let s = 7; for (let i = 0; i < M.n; i++) { s = (s * 1103515245 + 12345) & 0x7fffffff; arrowEligible[i] = (s % 1000) < (M.pts[i].type <= 1 ? 480 : 230) ? 1 : 0; } }
+
+// ---------- great vessels (orientation only) ----------
+const vesselMat = new THREE.MeshStandardMaterial({ color: 0xc8c1b7, roughness: 0.45, metalness: 0.05, transparent: true, opacity: 0.6, depthWrite: false });
+const paMat = new THREE.MeshStandardMaterial({ color: 0xa9b2bb, roughness: 0.45, metalness: 0.05, transparent: true, opacity: 0.62, depthWrite: false });
+const veinMat = new THREE.MeshStandardMaterial({ color: 0x8d97a2, roughness: 0.5, metalness: 0.05, transparent: true, opacity: 0.6, depthWrite: false });
+clipMats.push(vesselMat, paMat, veinMat);
+const vessels = new THREE.Group(); scene.add(vessels);
+function tube(pts, r, mat, closeEnds = true) {
+  const curve = new THREE.CatmullRomCurve3(pts.map(V3), false, 'centripetal');
+  const g = new THREE.TubeGeometry(curve, Math.max(24, pts.length * 14), r, 20, false);
+  const m = new THREE.Mesh(g, mat); vessels.add(m);
+  if (closeEnds) for (const [u, sgn] of [[0, -1], [1, 1]]) {
+    const cap = new THREE.Mesh(new THREE.CircleGeometry(r, 20), mat);
+    cap.position.copy(curve.getPoint(u)); cap.lookAt(curve.getPoint(u).add(curve.getTangent(u).multiplyScalar(sgn))); vessels.add(cap);
+  }
+  return curve;
+}
+const L2P = q => M.F.toP(q);
+const addv = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+{
+  // landmarks come from the model anatomy (heart frame -> patient frame); vessel courses are drawn in the patient frame
+  const A = M.A;
+  const ao = L2P(A.AoV), pv = L2P(A.RVOT.b), svc = L2P(A.SVC), ivc = L2P(A.IVC);
+  tube([ao, addv(ao, [-0.55, 1.6, 0.35]), addv(ao, [-0.6, 3.8, 0.3]), addv(ao, [0.3, 5.9, -0.7]), addv(ao, [1.9, 6.3, -2.6]), addv(ao, [3.0, 4.8, -4.9]), addv(ao, [3.1, 1.0, -6.6]), addv(ao, [3.1, -6.5, -6.8])], 1.0, vesselMat);
+  const bif = addv(pv, [0.8, 2.7, -1.5]);
+  const pvAxis = V3(M.F.dirP([A.RVOT.b[0] - A.RVOT.a[0], A.RVOT.b[1] - A.RVOT.a[1], A.RVOT.b[2] - A.RVOT.a[2]])).normalize();
+  tube([addv(pv, pvAxis.clone().multiplyScalar(-0.6).toArray()), addv(pv, [0.35, 1.3, -0.3]), bif], 0.95, paMat);
+  tube([bif, addv(bif, [1.8, 0.1, -1.0]), addv(bif, [3.3, -0.4, -2.2])], 0.6, paMat);
+  tube([bif, addv(bif, [-1.3, -0.3, -1.3]), addv(bif, [-4.6, -0.8, -1.6])], 0.6, paMat);
+  tube([svc, addv(svc, [0.15, 3.0, 0.1]), addv(svc, [0.3, 5.8, 0.1])], 0.72, veinMat);
+  tube([ivc, addv(ivc, [0.05, -2.2, -0.3]), addv(ivc, [0.1, -4.2, -0.4])], 0.8, veinMat);
+  const la = L2P(A.LA.c);
+  for (const [o, d] of [[[2.0, 0.7, -1.2], [2.4, 0.4, -1.4]], [[2.0, -0.6, -1.2], [2.4, -0.6, -1.4]], [[-1.9, 0.7, -1.3], [-2.4, 0.4, -1.4]], [[-1.9, -0.6, -1.3], [-2.4, -0.6, -1.4]]]) {
+    const a0 = addv(la, o); tube([a0, addv(a0, d.map(x => x * 0.5)), addv(a0, d)], 0.42, veinMat);
+  }
+  // fibrous valve rings (electrically insulating skeleton)
+  const ringMat = new THREE.MeshStandardMaterial({ color: 0xe9e4da, roughness: 0.7, transparent: true, opacity: 0.9 });
+  clipMats.push(ringMat);
+  const e3 = V3(M.F.e3);
+  const ring = (cL, r, normal) => { const m = new THREE.Mesh(new THREE.TorusGeometry(r, 0.11, 8, 40), ringMat); m.position.copy(V3(L2P(cL))); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal); vessels.add(m); };
+  ring([0.35, 1.9, -0.55], 1.3, e3);             // mitral
+  ring([-2.85, 1.9, 0.75], 1.35, e3);            // tricuspid
+  ring(A.AoV, 1.05, e3);                         // aortic
+  ring(A.RVOT.b, 0.98, pvAxis);                  // pulmonary
+}
+
+// ---------- conduction system ----------
+const csGroup = new THREE.Group(); scene.add(csGroup);
+const csSegs = [];
+const csMatFor = () => { const m = new THREE.MeshBasicMaterial({ color: 0xffffff }); clipMats.push(m); return m; };
+for (const s of M.tree) {
+  if (s.kind === 'avn') continue;
+  const a = V3(s.a), b = V3(s.b);
+  const r = s.kind === 'his' ? 0.13 : s.kind === 'bach' ? 0.1 : 0.085;
+  const g = new THREE.TubeGeometry(new THREE.LineCurve3(a, b), 2, r, 8, false);
+  const m = new THREE.Mesh(g, csMatFor()); m.renderOrder = 4;
+  csGroup.add(m); csSegs.push({ seg: s, mesh: m });
+}
+const nodeGeo = new THREE.SphereGeometry(0.34, 20, 14);
+const saMesh = new THREE.Mesh(nodeGeo, csMatFor()); saMesh.position.copy(V3(M.pts[M.iSA].p)); csGroup.add(saMesh);
+const avMesh = new THREE.Mesh(nodeGeo, csMatFor()); avMesh.position.copy(V3(M.pts[M.iAVN].p)); csGroup.add(avMesh);
+// Purkinje network = shortest-path tree inside the subendocardial Purkinje layer
+const pkPos = new Float32Array(M.purkSegs.length * 6), pkCol = new Float32Array(M.purkSegs.length * 8);
+M.purkSegs.forEach(([a, b], k) => { pkPos.set([M.pos[3 * a], M.pos[3 * a + 1], M.pos[3 * a + 2], M.pos[3 * b], M.pos[3 * b + 1], M.pos[3 * b + 2]], 6 * k); });
+const pkGeo = new THREE.BufferGeometry();
+pkGeo.setAttribute('position', new THREE.BufferAttribute(pkPos, 3));
+pkGeo.setAttribute('color', new THREE.BufferAttribute(pkCol, 4));
+const pkMat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 1, depthWrite: false });
+clipMats.push(pkMat);
+const purkLines = new THREE.LineSegments(pkGeo, pkMat); purkLines.renderOrder = 4; csGroup.add(purkLines);
+
+// ---------- heart vector, VCG loop, lead axis, projection ----------
+const VS = 4.6; // cm per mV for drawing H
+function makeArrow(color, shaftR, headR, headL) {
+  const grp = new THREE.Group();
+  const mat = new THREE.MeshBasicMaterial({ color, depthTest: false, transparent: true });
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(shaftR, shaftR, 1, 12).translate(0, 0.5, 0), mat);
+  const head = new THREE.Mesh(new THREE.ConeGeometry(headR, headL, 18).translate(0, -headL / 2, 0), mat);
+  grp.add(shaft, head); grp.renderOrder = 10; shaft.renderOrder = 10; head.renderOrder = 10;
+  grp.userData = { shaft, head, headL, mat };
+  return grp;
+}
+const UP = new THREE.Vector3(0, 1, 0);
+function setArrow(a, origin, dirVec, length) {
+  const L = Math.abs(length);
+  if (L < 0.05) { a.visible = false; return; }
+  a.visible = true;
+  const d = dirVec.clone().normalize().multiplyScalar(Math.sign(length) || 1);
+  a.position.copy(origin);
+  a.quaternion.setFromUnitVectors(UP, d);
+  const hl = Math.min(a.userData.headL, L * 0.45);
+  a.userData.shaft.scale.set(1, Math.max(L - hl, 0.001), 1);
+  a.userData.head.position.set(0, L, 0);
+  a.userData.head.scale.set(hl / a.userData.headL, hl / a.userData.headL, hl / a.userData.headL);
+}
+const vecArrow = makeArrow(0xc2187a, 0.12, 0.42, 1.1); scene.add(vecArrow);
+const projArrow = makeArrow(0x17914a, 0.1, 0.36, 0.9); scene.add(projArrow);
+const tipDot = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 12), new THREE.MeshBasicMaterial({ color: 0xc2187a, depthTest: false }));
+tipDot.renderOrder = 11; scene.add(tipDot);
+const centerDot = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 12), new THREE.MeshBasicMaterial({ color: 0x222222, depthTest: false }));
+centerDot.renderOrder = 11; scene.add(centerDot);
+// VCG loop
+const loopPos = new Float32Array(M.nT * 3), loopCol = new Float32Array(M.nT * 3);
+for (let k = 0; k < M.nT; k++) { loopPos[3 * k] = M.H[3 * k] * VS; loopPos[3 * k + 1] = M.H[3 * k + 1] * VS; loopPos[3 * k + 2] = M.H[3 * k + 2] * VS; }
+const loopGeo = new THREE.BufferGeometry();
+loopGeo.setAttribute('position', new THREE.BufferAttribute(loopPos, 3));
+loopGeo.setAttribute('color', new THREE.BufferAttribute(loopCol, 3));
+const loopFaintMat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.22, depthTest: false });
+const loopMat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 1, depthTest: false });
+const loopFaint = new THREE.Line(loopGeo, loopFaintMat); loopFaint.renderOrder = 8; scene.add(loopFaint);
+const loopTrail = new THREE.Line(loopGeo, loopMat); loopTrail.renderOrder = 9; scene.add(loopTrail);
+// lead axis
+const axisGroup = new THREE.Group(); scene.add(axisGroup);
+const axisPosMat = new THREE.LineBasicMaterial({ color: 0x17914a, depthTest: false, transparent: true });
+const axisNegMat = new THREE.LineDashedMaterial({ color: 0x17914a, depthTest: false, transparent: true, opacity: 0.6, dashSize: 0.5, gapSize: 0.35 });
+const axisPos = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(1, 0, 0)]), axisPosMat);
+const axisNeg = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(-1, 0, 0)]), axisNegMat);
+axisPos.renderOrder = 7; axisNeg.renderOrder = 7; axisGroup.add(axisPos, axisNeg);
+const dropMat = new THREE.LineDashedMaterial({ color: 0x888888, depthTest: false, transparent: true, opacity: 0.85, dashSize: 0.25, gapSize: 0.2 });
+const dropLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), dropMat);
+dropLine.renderOrder = 9; scene.add(dropLine);
+const electrodeGeo = new THREE.SphereGeometry(0.42, 18, 12);
+const electrodes = {};
+for (const v of ['V1', 'V2', 'V3', 'V4', 'V5', 'V6']) {
+  const m = new THREE.Mesh(electrodeGeo, new THREE.MeshBasicMaterial({ color: 0x17914a, depthTest: false, transparent: true }));
+  m.position.copy(V3(M.electrodes[v])); m.renderOrder = 7; axisGroup.add(m); electrodes[v] = m;
+}
+
+// ---------- text sprites ----------
+function textSprite(text, { color = '#222', bg = null, size = 44, weight = 600, scale = 1, pad = 14 } = {}) {
+  const c = document.createElement('canvas'), ctx = c.getContext('2d');
+  const font = `${weight} ${size}px "IBM Plex Sans Hebrew", Arial, sans-serif`;
+  ctx.font = font; const w = Math.ceil(ctx.measureText(text).width * 1.06) + pad * 2, h = Math.ceil(size * 1.35) + pad;
+  c.width = w * 2; c.height = h * 2; ctx.scale(2, 2);
+  if (bg) { ctx.fillStyle = bg; const r = h / 2; ctx.beginPath(); ctx.roundRect(0, 0, w, h, r); ctx.fill(); }
+  ctx.font = font; ctx.fillStyle = color; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.direction = /[֐-׿]/.test(text) ? 'rtl' : 'ltr';
+  ctx.fillText(text, w / 2, h / 2 + 1);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true }));
+  const k = 0.024 * scale; sp.scale.set(w * k, h * k, 1); sp.renderOrder = 12;
+  return sp;
+}
+const labelGroup = new THREE.Group(); scene.add(labelGroup);
+const labelScale = () => canvas.clientWidth < 620 ? 0.72 : 0.9;
+const axisLabelGroup = new THREE.Group(); scene.add(axisLabelGroup);
+// [text, anchor (heart-frame coords, or special key)]; label sits outward from the anchor and fades when its side faces away
+const CHAMBER_LABELS = [
+  ['חדר שמאל', 'lv'], ['חדר ימין', 'rv'], ['עלייה ימנית', 'ra'], ['עלייה שמאלית', 'la'],
+  ['אאורטה', 'ao'], ['עורק הריאה', 'pa'], ['וריד נבוב עליון', 'svc'], ['וריד נבוב תחתון', 'ivc'],
+];
+function buildLabels() {
+  labelGroup.clear();
+  const col = C.dark ? '#f3efe9' : '#2a211d', bg = C.dark ? 'rgba(20,22,26,0.72)' : 'rgba(255,255,255,0.78)';
+  const special = {
+    ao: addv(L2P(M.A.AoV), [-2.4, 5.2, 0.8]), pa: addv(L2P(M.A.RVOT.b), [2.6, 2.4, 0.4]),
+    svc: addv(L2P(M.A.SVC), [-1.6, 4.6, 0]), ivc: addv(L2P(M.A.IVC), [-1.8, -3.6, 0]),
+    lv: [5.6, -2.2, 0.6], rv: [-1.4, -4.6, 4.2], ra: [-6.6, 0.4, 0.9], la: [1.2, 3.2, -6.2],
+  };
+  const k = labelScale();
+  for (const [txt, q] of CHAMBER_LABELS) {
+    const sp = textSprite(txt, { color: col, bg, size: 26, weight: 600, scale: k });
+    const anchor = V3(special[q]);
+    const out = anchor.clone().setY(anchor.y * 0.6).normalize();
+    sp.position.copy(anchor);
+    sp.userData.n = out; sp.userData.anchor = anchor.clone().multiplyScalar(0.75); labelGroup.add(sp);
+  }
+  const sa = textSprite('קוצב סינוסי SA', { color: col, bg, size: 22, weight: 500, scale: k });
+  sa.position.copy(V3(M.pts[M.iSA].p)).add(new THREE.Vector3(-1.4, 1.3, 0.6)); sa.userData.n = new THREE.Vector3(-0.6, 0.5, 0.6).normalize(); labelGroup.add(sa);
+  const av = textSprite('צומת AV', { color: col, bg, size: 22, weight: 500, scale: k });
+  av.position.copy(V3(M.pts[M.iAVN].p)).add(new THREE.Vector3(-0.6, -1.2, 1.6)); av.userData.n = new THREE.Vector3(0, -0.2, 1).normalize(); labelGroup.add(av);
+  labelGroup.userData.cs = [sa, av];
+}
+let axisPlus, axisMinus;
+function buildAxisLabels() {
+  axisLabelGroup.clear();
+  const L = M.leads[S.lead];
+  const c = S.lead === 'aVR' ? C['c-axis'] : C['c-axis'];
+  axisPlus = textSprite(S.lead + ' +', { color: '#fff', bg: c, size: 34, weight: 700, scale: 1.05 });
+  axisMinus = textSprite('−', { color: c, bg: C.dark ? 'rgba(20,22,26,0.7)' : 'rgba(255,255,255,0.8)', size: 34, weight: 700, scale: 0.9 });
+  axisLabelGroup.add(axisPlus, axisMinus);
+}
+
+// ---------- precomputed colours ----------
+const col3 = s => new THREE.Color(s);
+let COL = {};
+function themeColors() {
+  readColors();
+  COL = {
+    rest: col3(C['c-rest']), depol: col3(C['c-depol']), plateau: col3(C['c-plateau']), repol: col3(C['c-repol']),
+    restPt: col3(C.dark ? '#7a4a46' : '#c79892'), vec: col3(C['c-vec']), pos: col3(C['c-pos']), neg: col3(C['c-neg']),
+    axis: col3(C['c-axis']), p: col3(C['c-p']), qrs: col3(C['c-qrs']), t: col3(C['c-t']), cs: col3(C['c-cs']),
+    csDim: col3(C.dark ? '#7d6a2c' : '#b79a4a'), csHot: col3(C.dark ? '#fff6c2' : '#fff1a8'), muscle: col3(C.dark ? '#9c4a42' : '#b9574c'),
+  };
+  vecArrow.userData.mat.color.copy(COL.vec); tipDot.material.color.copy(COL.vec);
+  centerDot.material.color.set(C.dark ? '#e8e4de' : '#2a2420');
+  axisPosMat.color.copy(COL.axis); axisNegMat.color.copy(COL.axis);
+  for (const v in electrodes) electrodes[v].material.color.copy(COL.axis);
+  dropMat.color.set(C.dark ? '#cfc9c1' : '#6b635b');
+  for (let k = 0; k < M.nT; k++) {
+    const t = k * M.P.dt;
+    const c = t <= EV.pOff + 15 ? COL.p : t <= EV.qrsOff + 10 ? COL.qrs : COL.t;
+    loopCol[3 * k] = c.r; loopCol[3 * k + 1] = c.g; loopCol[3 * k + 2] = c.b;
+  }
+  loopGeo.attributes.color.needsUpdate = true;
+  buildLabels(); buildAxisLabels();
+}
+
+// ===================================================== per-frame update of the 3D state
+const STATE = new Uint8Array(M.n);   // 0 rest, 1 depolarizing, 2 plateau, 3 repolarizing
+const tmpM = new THREE.Matrix4(), tmpQ = new THREE.Quaternion(), tmpS = new THREE.Vector3(), tmpP = new THREE.Vector3(), tmpD = new THREE.Vector3();
+const UPSTROKE = 9; // ms window shown as "depolarizing now"
+function tissueState(i, t) {
+  const tau = t - M.tAct[i], apd = M.apd[i], tr = M.tauRep[i];
+  if (!(tau >= 0)) return 0;
+  if (tau < UPSTROKE) return 1;
+  if (tau < apd - 1.1 * tr) return 2;
+  if (tau < apd + 1.6 * tr) return 3;
+  return 0;
+}
+function updateTissue(t) {
+  const col = points.instanceColor.array, mat = points.instanceMatrix.array;
+  const showArrows = S.arrows;
+  let na = 0;
+  const acol = arrows.instanceColor.array;
+  for (let i = 0; i < M.n; i++) {
+    const st = tissueState(i, t); STATE[i] = st;
+    let c, s;
+    if (st === 0) { c = COL.restPt; s = 0.6; }
+    else if (st === 1) { c = COL.depol; s = 1.7; }
+    else if (st === 2) { c = COL.plateau; s = 1.0; }
+    else { c = COL.repol; s = 1.35; }
+    col[3 * i] = c.r; col[3 * i + 1] = c.g; col[3 * i + 2] = c.b;
+    const o = 16 * i;
+    mat[o] = s; mat[o + 1] = 0; mat[o + 2] = 0; mat[o + 3] = 0;
+    mat[o + 4] = 0; mat[o + 5] = s; mat[o + 6] = 0; mat[o + 7] = 0;
+    mat[o + 8] = 0; mat[o + 9] = 0; mat[o + 10] = s; mat[o + 11] = 0;
+    mat[o + 12] = M.pos[3 * i]; mat[o + 13] = M.pos[3 * i + 1]; mat[o + 14] = M.pos[3 * i + 2]; mat[o + 15] = 1;
+    if (showArrows && na < ARROW_MAX && arrowEligible[i]) {
+      const tau = t - M.tAct[i];
+      let dirArr = null, ac = null;
+      if (tau >= 0 && tau < UPSTROKE) { dirArr = M.propDir; ac = COL.depol; }
+      else if (Math.abs(tau - M.apd[i]) < 0.75 * M.tauRep[i]) { dirArr = M.repDir; ac = COL.repol; }
+      if (dirArr) {
+        tmpD.set(dirArr[3 * i], dirArr[3 * i + 1], dirArr[3 * i + 2]);
+        if (tmpD.lengthSq() > 0.5) {
+          tmpQ.setFromUnitVectors(UP, tmpD); tmpP.set(M.pos[3 * i], M.pos[3 * i + 1], M.pos[3 * i + 2]);
+          tmpS.setScalar(M.pts[i].type <= 1 ? 0.85 : 1);
+          tmpM.compose(tmpP, tmpQ, tmpS); tmpM.toArray(arrows.instanceMatrix.array, 16 * na);
+          acol[3 * na] = ac.r; acol[3 * na + 1] = ac.g; acol[3 * na + 2] = ac.b; na++;
+        }
+      }
+    }
+  }
+  points.instanceColor.needsUpdate = true; points.instanceMatrix.needsUpdate = true;
+  arrows.count = na; arrows.visible = showArrows && na > 0;
+  arrows.instanceMatrix.needsUpdate = true; arrows.instanceColor.needsUpdate = true;
+  // surface colour = muscle tone tinted by the state of the nearest tissue
+  const W = [0, 0.85, 0.5, 0.6], SC = [null, COL.depol, COL.plateau, COL.repol];
+  const base = COL.muscle;
+  for (let v = 0; v < surfNear.length; v++) {
+    const st = STATE[surfNear[v]];
+    if (st === 0) { surfColors[3 * v] = base.r; surfColors[3 * v + 1] = base.g; surfColors[3 * v + 2] = base.b; }
+    else { const w = W[st], c = SC[st]; surfColors[3 * v] = base.r + (c.r - base.r) * w; surfColors[3 * v + 1] = base.g + (c.g - base.g) * w; surfColors[3 * v + 2] = base.b + (c.b - base.b) * w; }
+  }
+  surface.geometry.attributes.color.needsUpdate = true;
+}
+function updateConduction(t) {
+  csGroup.visible = S.cs;
+  if (labelGroup.userData.cs) labelGroup.userData.cs.forEach(s => s.visible = S.cs && S.labels);
+  if (!S.cs) return;
+  const hot = COL.csHot, dim = COL.csDim, act = COL.cs;
+  for (const { seg, mesh } of csSegs) {
+    let c;
+    if (seg.kind === 'bach') c = (t >= EV.pOn + 8 && t <= EV.pOff) ? hot : (t > EV.pOff && t < EV.pOff + 150) ? act : dim;
+    else if (t < seg.ta) c = dim;
+    else if (t < seg.tb + 12) c = hot;
+    else if (t < EV.qrsOff + 60) c = act;
+    else c = dim;
+    mesh.material.color.copy(c);
+  }
+  saMesh.material.color.copy(t >= EV.pOn - 3 && t < EV.pOn + 14 ? hot : act);
+  const s = (t >= EV.pOn - 3 && t < EV.pOn + 14) ? 1.5 : 1; saMesh.scale.setScalar(s);
+  const avActive = t >= EV.avIn && t < EV.his;
+  avMesh.material.color.copy(avActive ? hot : t >= EV.his && t < EV.qrsOff ? act : dim);
+  avMesh.scale.setScalar(avActive ? 1.25 + 0.25 * Math.sin((t - EV.avIn) / 7) : 1);
+  for (let k = 0; k < M.purkSegs.length; k++) {
+    const b = M.purkSegs[k][1], ta = M.tAct[b];
+    const [c, a] = t < ta ? [dim, 0.22] : t < ta + 14 ? [hot, 1] : t < EV.qrsOff + 40 ? [act, 0.55] : [dim, 0.22];
+    pkCol.set([c.r, c.g, c.b, a, c.r, c.g, c.b, a], 8 * k);
+  }
+  pkGeo.attributes.color.needsUpdate = true;
+}
+const tmpH = new THREE.Vector3(), ORIGIN = new THREE.Vector3(), tmpNdc = new THREE.Vector3();
+function keepInView(sp) { // pull a label toward the centre until it is on screen
+  camera.updateMatrixWorld();
+  for (let i = 0; i < 30; i++) {
+    tmpNdc.copy(sp.position).project(camera);
+    const mx = 1 - sp.scale.x / (2 * Math.tan(camera.fov * Math.PI / 360) * camera.position.length() * camera.aspect) - 0.04;
+    const my = 1 - sp.scale.y / (2 * Math.tan(camera.fov * Math.PI / 360) * camera.position.length()) - 0.13;
+    if (Math.abs(tmpNdc.x) <= mx && Math.abs(tmpNdc.y) <= my) return;
+    sp.position.multiplyScalar(0.94);
+  }
+}
+function leadUnit(name) { return V3(M.leads[name]).normalize(); }
+function updateVectors(t) {
+  const Hv = M.Hat(t); tmpH.set(Hv[0], Hv[1], Hv[2]);
+  const mag = tmpH.length();
+  vecArrow.visible = S.vec; tipDot.visible = S.vec && mag * VS > 0.05; centerDot.visible = S.vec || S.axis;
+  if (S.vec) { setArrow(vecArrow, ORIGIN, tmpH, mag * VS); tipDot.position.copy(tmpH).multiplyScalar(VS); }
+  // VCG loop up to the cursor
+  const k = clamp(Math.round(t / M.P.dt), 0, M.nT - 1);
+  loopFaint.visible = loopTrail.visible = S.vloop;
+  loopTrail.geometry.setDrawRange(0, k + 1);
+  // lead axis
+  const Lu = leadUnit(S.lead), isV = S.lead[0] === 'V';
+  axisGroup.visible = S.axis; axisLabelGroup.visible = S.axis;
+  const plusEnd = isV ? V3(M.electrodes[S.lead]) : Lu.clone().multiplyScalar(9.5);
+  const negEnd = Lu.clone().multiplyScalar(isV ? -6.5 : -9.5);
+  axisPos.geometry.setFromPoints([ORIGIN, plusEnd]); axisNeg.geometry.setFromPoints([ORIGIN, negEnd]); axisNeg.computeLineDistances();
+  const fromLead = S.view === 'lead' && !camTarget;
+  for (const v in electrodes) { electrodes[v].visible = isV && !(fromLead && v === S.lead); electrodes[v].material.opacity = v === S.lead ? 1 : 0.28; electrodes[v].scale.setScalar(v === S.lead ? 1 : 0.7); }
+  if (axisPlus) {
+    axisPlus.position.copy(plusEnd).add(Lu.clone().multiplyScalar(isV ? 1.5 : 1.3));
+    axisMinus.position.copy(negEnd).add(Lu.clone().multiplyScalar(-0.9));
+    axisPlus.visible = !fromLead; keepInView(axisPlus); keepInView(axisMinus);
+  }
+  // projection ("shadow") of H on the lead axis
+  const proj = tmpH.dot(Lu);           // mV along the unit axis
+  const val = M.ecg[S.lead][k];        // trace value = H · L  (|L| = 0.87 for aVR/aVL/aVF)
+  projArrow.visible = S.axis;
+  if (S.axis) {
+    projArrow.userData.mat.color.copy(val >= 0 ? COL.pos : COL.neg);
+    setArrow(projArrow, ORIGIN, Lu, proj * VS);
+    const foot = Lu.clone().multiplyScalar(proj * VS);
+    dropLine.visible = S.vec && Math.abs(proj * VS) > 0.05 && mag * VS > 0.3;
+    dropLine.geometry.setFromPoints([tmpH.clone().multiplyScalar(VS), foot]); dropLine.computeLineDistances();
+  } else dropLine.visible = false;
+  return { Hv, mag, proj, val };
+}
+
+// ===================================================== clipping
+function updateClip() {
+  const on = S.clip !== 'off';
+  let n;
+  if (S.clip === 'frontal') n = new THREE.Vector3(0, 0, -1);           // keep the posterior half, look from the front
+  else if (S.clip === 'transverse') n = new THREE.Vector3(0, -1, 0);   // keep the lower half, look from above/front
+  else n = V3(M.F.e2).negate();                                        // four-chamber (long-axis) plane
+  clipPlane.normal.copy(n); clipPlane.constant = S.clipAt;
+  for (const m of clipMats) { m.clippingPlanes = on ? [clipPlane] : []; m.needsUpdate = true; }
+  $('clipAt').disabled = !on;
+  document.querySelectorAll('#clipSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.clip === S.clip)));
+}
+
+// ===================================================== camera / views
+const VIEW_DIST = 37;
+function setView(v, instant) {
+  S.view = v;
+  let dir, up = new THREE.Vector3(0, 1, 0);
+  if (v === 'front') dir = new THREE.Vector3(0, 0, 1);
+  else if (v === 'left') dir = new THREE.Vector3(1, 0, 0);
+  else if (v === 'inferior') { dir = new THREE.Vector3(0, -1, 0); up = new THREE.Vector3(0, 0, 1); }
+  else if (v === 'posterior') dir = new THREE.Vector3(0, 0, -1);
+  else if (v === 'cut') { // look straight at the section face (from the removed side)
+    dir = clipPlane.normal.clone().negate();
+    if (S.clip === 'transverse') { dir = new THREE.Vector3(0, 1, 0.45).normalize(); up = new THREE.Vector3(0, 0, -1); }
+    if (Math.abs(dir.y) > 0.9) up = new THREE.Vector3(0, 0, -1);
+  }
+  else { // from the positive pole of the selected lead
+    dir = S.lead[0] === 'V' ? V3(M.electrodes[S.lead]).normalize() : leadUnit(S.lead);
+    if (Math.abs(dir.y) > 0.9) up = new THREE.Vector3(0, 0, 1);
+  }
+  const aspect = canvas.clientWidth / Math.max(1, canvas.clientHeight);
+  const dist = VIEW_DIST * (aspect < 1 ? Math.min(1.7, 1 / aspect * 0.95) : 1);
+  camTarget = { pos: dir.clone().multiplyScalar(dist), up };
+  if (instant) { camera.position.copy(camTarget.pos); camera.up.copy(up); controls.target.set(0, 0, 0); camera.lookAt(0, 0, 0); camTarget = null; }
+  document.querySelectorAll('#viewSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === v)));
+  dirty = true; writeHash();
+}
+let camTarget = null;
+function animateCamera() {
+  if (!camTarget) return;
+  camera.position.lerp(camTarget.pos, 0.18);
+  camera.up.lerp(camTarget.up, 0.18).normalize();
+  controls.target.lerp(new THREE.Vector3(), 0.18);
+  if (camera.position.distanceTo(camTarget.pos) < 0.05) { camera.position.copy(camTarget.pos); camera.up.copy(camTarget.up); camTarget = null; }
+  dirty = true;
+}
+
+// orientation compass (patient axes as seen by the camera)
+const compass = $('compass'), cctx = compass.getContext('2d');
+function drawCompass() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2), w = 92;
+  if (compass.width !== w * dpr) { compass.width = w * dpr; compass.height = w * dpr; }
+  cctx.setTransform(dpr, 0, 0, dpr, 0, 0); cctx.clearRect(0, 0, w, w);
+  const q = camera.quaternion.clone().invert();
+  const axes = [['ראש', [0, 1, 0]], ['שמאל', [1, 0, 0]], ['קדמי', [0, 0, 1]]];
+  const items = axes.map(([lab, a]) => { const v = V3(a).applyQuaternion(q); return { lab, v }; }).sort((a, b) => a.v.z - b.v.z);
+  const cx = w / 2, cy = w / 2, R = 30;
+  cctx.font = '600 11px "IBM Plex Sans Hebrew", Arial'; cctx.textAlign = 'center'; cctx.textBaseline = 'middle'; cctx.direction = 'rtl';
+  for (const { lab, v } of items) {
+    const x = cx + v.x * R, y = cy - v.y * R, a = 0.45 + 0.55 * (v.z + 1) / 2, l2 = Math.hypot(v.x, v.y);
+    cctx.globalAlpha = a; cctx.strokeStyle = C['ink-2']; cctx.fillStyle = C['ink-2']; cctx.lineWidth = 2;
+    if (l2 < 0.3) { // axis points at / away from the viewer
+      cctx.beginPath(); cctx.arc(cx, cy, 5, 0, Math.PI * 2); cctx.stroke();
+      if (v.z > 0) { cctx.beginPath(); cctx.arc(cx, cy, 1.8, 0, Math.PI * 2); cctx.fill(); }
+      else { cctx.beginPath(); cctx.moveTo(cx - 3.5, cy - 3.5); cctx.lineTo(cx + 3.5, cy + 3.5); cctx.moveTo(cx + 3.5, cy - 3.5); cctx.lineTo(cx - 3.5, cy + 3.5); cctx.stroke(); }
+      cctx.fillStyle = C['ink']; cctx.fillText(lab, cx - 20, cy + 13); continue;
+    }
+    cctx.beginPath(); cctx.moveTo(cx, cy); cctx.lineTo(x, y); cctx.stroke();
+    cctx.fillStyle = C['ink']; cctx.fillText(lab, cx + v.x / l2 * (R + 11), cy - v.y / l2 * (R + 9));
+  }
+  cctx.globalAlpha = 1;
+}
+
+// ===================================================== ECG drawing (main strip + 12 minis)
+const strip = $('strip'), sctx = strip.getContext('2d');
+const RANGES = {};
+for (const nm of LEADS) {
+  const a = M.ecg[nm]; let lo = 0, hi = 0; for (const v of a) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
+  RANGES[nm] = [Math.min(-0.5, lo - 0.2), Math.max(0.6, hi + 0.25)];
+}
+const GLOBAL_RANGE = [Math.min(...LEADS.map(n => RANGES[n][0])), Math.max(...LEADS.map(n => RANGES[n][1]))];
+function drawPaper(ctx, x0, y0, w, h, tToX, vToY, lo, hi, majorOnly) {
+  ctx.fillStyle = C.paper; ctx.fillRect(x0, y0, w, h);
+  const pxPerMsX = (tToX(40) - tToX(0)), pxPerTenth = vToY(0) - vToY(0.1);
+  const drawLines = (stepMs, stepMv, color, lw) => {
+    ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.beginPath();
+    for (let t = 0; t <= BEAT + 0.1; t += stepMs) { const x = Math.round(tToX(t)) + 0.5; ctx.moveTo(x, y0); ctx.lineTo(x, y0 + h); }
+    const k0 = Math.ceil(lo / stepMv), k1 = Math.floor(hi / stepMv);
+    for (let k = k0; k <= k1; k++) { const y = Math.round(vToY(k * stepMv)) + 0.5; if (y < y0 || y > y0 + h) continue; ctx.moveTo(x0, y); ctx.lineTo(x0 + w, y); }
+    ctx.stroke();
+  };
+  if (!majorOnly && pxPerMsX >= 3 && pxPerTenth >= 3) drawLines(40, 0.1, C['grid-minor'], 1);
+  drawLines(200, 0.5, C['grid-major'], 1);
+}
+function drawTrace(ctx, nm, tToX, vToY, lw, color) {
+  const a = M.ecg[nm];
+  ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  ctx.beginPath();
+  for (let k = 0; k < a.length; k++) { const x = tToX(k * M.P.dt), y = vToY(a[k]); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+  ctx.stroke();
+}
+let stripCache = null, stripGeom = null;
+function stripLayout() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const W = strip.clientWidth, Hh = strip.clientHeight;
+  if (strip.width !== Math.round(W * dpr) || strip.height !== Math.round(Hh * dpr)) { strip.width = Math.round(W * dpr); strip.height = Math.round(Hh * dpr); stripCache = null; }
+  const padL = 30, padR = 10, top = 26, bot = 16;
+  const [lo, hi] = RANGES[S.lead];
+  const plotW = W - padL - padR, plotH = Hh - top - bot;
+  const tToX = t => padL + t / BEAT * plotW, xToT = x => (x - padL) / plotW * BEAT;
+  const vToY = v => top + (hi - v) / (hi - lo) * plotH;
+  return { dpr, W, Hh, padL, padR, top, bot, lo, hi, plotW, plotH, tToX, xToT, vToY };
+}
+const BANDS = () => [
+  { lab: 'P', a: EV.pOn, b: EV.pOff, c: C['c-p'], wave: true },
+  { lab: 'PR', a: EV.pOff, b: EV.qrsOn, c: C['ink-3'], wave: false },
+  { lab: 'QRS', a: EV.qrsOn, b: EV.qrsOff, c: C['c-qrs'], wave: true },
+  { lab: 'ST', a: EV.qrsOff, b: EV.tOn, c: C['ink-3'], wave: false },
+  { lab: 'T', a: EV.tOn, b: EV.tEnd, c: C['c-t'], wave: true },
+];
+function renderStripBase() {
+  const g = stripGeom = stripLayout();
+  const off = document.createElement('canvas'); off.width = strip.width; off.height = strip.height;
+  const ctx = off.getContext('2d'); ctx.setTransform(g.dpr, 0, 0, g.dpr, 0, 0);
+  ctx.fillStyle = C.surface; ctx.fillRect(0, 0, g.W, g.Hh);
+  drawPaper(ctx, g.padL, g.top, g.plotW, g.plotH, g.tToX, g.vToY, g.lo, g.hi);
+  // 1 mV calibration pulse
+  ctx.strokeStyle = C.trace; ctx.lineWidth = 1.5; ctx.beginPath();
+  const y0 = g.vToY(0), y1 = g.vToY(1), xc = 6, wcal = Math.max(10, g.tToX(200) - g.tToX(0)) * 0.5;
+  ctx.moveTo(xc, y0); ctx.lineTo(xc + 4, y0); ctx.lineTo(xc + 4, y1); ctx.lineTo(xc + 4 + Math.min(wcal, 14), y1); ctx.lineTo(xc + 4 + Math.min(wcal, 14), y0); ctx.lineTo(g.padL, y0); ctx.stroke();
+  ctx.fillStyle = C['ink-3']; ctx.font = '10px "IBM Plex Sans Hebrew", Arial'; ctx.textAlign = 'left'; ctx.fillText('1 mV', 3, Math.max(y1 - 5, g.top + 9)); // keep the label inside the plot when the pulse exceeds the lead's range
+  drawTrace(ctx, S.lead, g.tToX, g.vToY, 2, C.trace);
+  // time ticks
+  ctx.fillStyle = C['ink-3']; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for (let t = 0; t <= BEAT; t += 200) ctx.fillText(t + ' ms', clamp(g.tToX(t), g.padL + 14, g.W - 20), g.Hh - g.bot + 3);
+  stripCache = off;
+}
+function drawStrip(t) {
+  if (!stripCache) renderStripBase();
+  const g = stripGeom;
+  sctx.setTransform(1, 0, 0, 1, 0, 0); sctx.drawImage(stripCache, 0, 0);
+  sctx.setTransform(g.dpr, 0, 0, g.dpr, 0, 0);
+  // wave / segment bands
+  sctx.font = '600 11px "IBM Plex Sans Hebrew", Arial'; sctx.textBaseline = 'middle'; sctx.textAlign = 'center';
+  for (const b of BANDS()) {
+    const xa = g.tToX(b.a), xb = g.tToX(b.b), active = t >= b.a && t < b.b;
+    sctx.globalAlpha = active ? 1 : 0.55;
+    sctx.strokeStyle = b.c; sctx.lineWidth = active ? 3 : 2;
+    sctx.beginPath(); sctx.moveTo(xa + 1, 18); sctx.lineTo(xb - 1, 18); sctx.stroke();
+    if (!b.wave) { sctx.beginPath(); sctx.moveTo(xa + 1, 14); sctx.lineTo(xa + 1, 22); sctx.moveTo(xb - 1, 14); sctx.lineTo(xb - 1, 22); sctx.stroke(); }
+    sctx.fillStyle = active ? b.c : C['ink-2'];
+    if (xb - xa > 16) sctx.fillText(b.lab, (xa + xb) / 2, 8);
+    if (active) { sctx.globalAlpha = 0.08; sctx.fillStyle = b.c; sctx.fillRect(xa, g.top, xb - xa, g.plotH); }
+  }
+  sctx.globalAlpha = 1;
+  // cursor
+  const x = g.tToX(t), k = clamp(Math.round(t / M.P.dt), 0, M.nT - 1), v = M.ecg[S.lead][k];
+  sctx.strokeStyle = C.cursor; sctx.lineWidth = 2; sctx.beginPath(); sctx.moveTo(x, g.top - 4); sctx.lineTo(x, g.top + g.plotH); sctx.stroke();
+  sctx.fillStyle = C.cursor; sctx.beginPath(); sctx.arc(x, g.vToY(v), 4.5, 0, Math.PI * 2); sctx.fill();
+  sctx.beginPath(); sctx.arc(x, g.top + g.plotH, 6, 0, Math.PI * 2); sctx.fill();
+  // value label near cursor
+  const txt = `${Math.round(t)} ms · ${fmtmV(v)}`;
+  sctx.font = '600 11px "IBM Plex Sans Hebrew", Arial'; const tw = sctx.measureText(txt).width + 10;
+  let lx = x + 8; if (lx + tw > g.W - 4) lx = x - 8 - tw;
+  sctx.fillStyle = C.surface; sctx.globalAlpha = 0.9; sctx.fillRect(lx, g.top + 2, tw, 17); sctx.globalAlpha = 1;
+  sctx.fillStyle = C.cursor; sctx.textAlign = 'left'; sctx.fillText(txt, lx + 5, g.top + 11);
+  strip.setAttribute('aria-valuenow', String(Math.round(t)));
+  strip.setAttribute('aria-valuetext', `${Math.round(t)} ms, ${S.lead} ${fmtmV(v)}`);
+}
+// minis
+const minis = {};
+function buildMinis() {
+  const grid = $('miniGrid'); grid.innerHTML = '';
+  for (const nm of LEADS) {
+    const c = document.createElement('canvas'); c.className = 'mini'; c.tabIndex = 0; c.setAttribute('role', 'button');
+    c.setAttribute('aria-label', 'בחר חיבור ' + nm); c.dataset.lead = nm;
+    c.addEventListener('click', () => selectLead(nm));
+    c.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectLead(nm); } });
+    grid.appendChild(c); minis[nm] = { c, cache: null };
+  }
+}
+function drawMini(nm, t) {
+  const m = minis[nm], c = m.c, dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const W = c.clientWidth, Hh = c.clientHeight; if (!W) return;
+  if (c.width !== Math.round(W * dpr) || c.height !== Math.round(Hh * dpr)) { c.width = Math.round(W * dpr); c.height = Math.round(Hh * dpr); m.cache = null; }
+  const [lo, hi] = GLOBAL_RANGE, pad = 3;
+  const tToX = tt => pad + tt / BEAT * (W - 2 * pad), vToY = v => 4 + (hi - v) / (hi - lo) * (Hh - 8);
+  if (!m.cache) {
+    const off = document.createElement('canvas'); off.width = c.width; off.height = c.height;
+    const ctx = off.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    drawPaper(ctx, 0, 0, W, Hh, tToX, vToY, lo, hi, true);
+    drawTrace(ctx, nm, tToX, vToY, 1.3, C.trace);
+    ctx.font = '700 11px "IBM Plex Sans Hebrew", Arial'; ctx.fillStyle = C.ink; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText(nm, 5, 3);
+    m.cache = off;
+  }
+  const ctx = c.getContext('2d');
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(m.cache, 0, 0); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const x = tToX(t), k = clamp(Math.round(t / M.P.dt), 0, M.nT - 1);
+  ctx.strokeStyle = C.cursor; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, Hh); ctx.stroke();
+  ctx.fillStyle = C.cursor; ctx.beginPath(); ctx.arc(x, vToY(M.ecg[nm][k]), 2.6, 0, Math.PI * 2); ctx.fill();
+  c.setAttribute('aria-pressed', String(nm === S.lead));
+}
+
+// ===================================================== explanations (driven by model event times)
+function phaseAt(t) {
+  const pMid = (EV.pOn + EV.pOff) / 2;
+  if (t < EV.pOn) return 'rest';
+  if (t < pMid) return 'p1';
+  if (t < EV.pOff) return 'p2';
+  if (t < EV.qrsOn) return 'pr';
+  if (t < EV.septalEnd) return 'sep';
+  if (t < EV.rPeak - 6) return 'qrs';
+  if (t <= EV.rPeak + 6) return 'r';
+  if (t < EV.qrsOff) return 'late';
+  if (t < EV.tOn) return 'st';
+  if (t < EV.tEnd) return 'tw';
+  return 'tp';
+}
+const PH = {
+  rest: { tag: 'מנוחה', c: 'ink-3', title: 'לפני הפעימה – כל התאים במנוחה',
+    text: () => 'כל תאי השריר נמצאים במתח המנוחה, ואותו מתח בכולם. אין הבדלי מתח בין אזורים – לכן אין וקטור והקו איזואלקטרי.' },
+  p1: { tag: 'גל P', c: 'c-p', title: 'גל P – דה-פולריזציה של העליות',
+    text: () => `הקוצב הסינוסי (${ltr('SA')}) בעלייה הימנית יורה. גל ההפעלה מתפשט בעלייה הימנית כלפי מטה, ובצרור באכמן שמאלה אל העלייה השמאלית. הווקטור הכולל פונה שמאלה-מטה – לכן ${ltr('P')} חיובי ב-${ltr('I, II, aVF')} ושלילי ב-${ltr('aVR')}.` },
+  p2: { tag: 'גל P', c: 'c-p', title: 'גל P – העלייה השמאלית מסיימת', dyn: true,
+    text: t => `העלייה הימנית כבר מופעלת כולה; כעת מופעלת העלייה השמאלית, האחורית ביותר. דופן העליות דקה (מסה קטנה) – ולכן גל ${ltr('P')} קטן. ${t >= EV.avIn ? 'בינתיים הגל כבר הגיע לצומת' : 'בינתיים הגל מתקרב לצומת'} ${ltr('AV')}.` },
+  pr: { tag: 'מקטע PR', c: 'ink-2', title: `מקטע ${ltr('PR')} – ההשהיה בצומת ${ltr('AV')}`, dyn: true,
+    text: t => `העליות מופעלות, החדרים עוד לא. הדחף מתעכב בצומת ${ltr('AV')} (כ-${ltr(Math.round(M.P.avDelay) + ' ms')}) כדי שהעליות יספיקו להתכווץ ולמלא את החדרים${t >= EV.his ? `; עכשיו הוא עובר בצרור היס ובענפי הצרור` : ''}. מסת מערכת ההולכה זעירה ולכן לא נראית באק״ג – הקו שטוח. (ההתאוששות של העליות, גל ${ltr('Ta')}, קטנה ונבלעת ב-${ltr('QRS')}.)` },
+  sep: { tag: 'QRS', c: 'c-qrs', title: `תחילת ${ltr('QRS')} – המחיצה מופעלת משמאל לימין`,
+    text: () => `הענף השמאלי מגיע ראשון לצד השמאלי של המחיצה, והגל חוצה אותה משמאל לימין (וקדימה). הווקטור הקטן הראשון פונה ימינה – לכן ${ltr('q')} קטן ב-${ltr('I, aVL, V5–V6')} ו-${ltr('r')} קטן ב-${ltr('V1')}.` },
+  qrs: { tag: 'QRS', c: 'c-qrs', title: 'הגל מתפשט בדפנות החדרים',
+    text: () => `רשת פורקינייה מפעילה במהירות את האנדוקרד (פנים הדופן) מהקודקוד כלפי הבסיס, ומשם הגל מתקדם לאט יותר החוצה אל האפיקרד. החדר השמאלי העבה מתחיל לשלוט בכיוון הווקטור.` },
+  r: { tag: 'שיא R', c: 'c-qrs', title: `שיא ${ltr('R')} – רוב שריר החדר השמאלי`,
+    text: () => `מסה גדולה של החדר השמאלי מופעלת בו-זמנית מבפנים החוצה; הכוחות של החדר הימני הדק מתקזזים בחלקם. הווקטור גדול ופונה שמאלה-מטה (ומעט אחורה) – לכן ${ltr('R')} גבוה ב-${ltr('I, II, V5–V6')} ו-${ltr('S')} עמוק ב-${ltr('V1')}.` },
+  late: { tag: 'סוף QRS', c: 'c-qrs', title: `סוף ${ltr('QRS')} – בסיס החדרים`,
+    text: () => `האזורים האחרונים שמופעלים הם בסיס החדרים, בעיקר הבסיס האחורי של החדר השמאלי. רוב השריר כבר מופעל, ולכן הווקטור קטן, והוא פונה ימינה, אחורה ומעט למעלה – זה ה-${ltr('S')} הקטן ב-${ltr('I')} וב-${ltr('V5–V6')}.` },
+  st: { tag: 'מקטע ST', c: 'ink-2', title: `מקטע ${ltr('ST')} – כל החדרים בפלטו`,
+    text: () => `כל תאי החדרים מופעלים ונמצאים בשלב הפלטו (שלב 2 של פוטנציאל הפעולה) – כולם באותו מתח. אין הבדלי מתח, אין וקטור – לכן הקו שטוח (איזואלקטרי).` },
+  tw: { tag: 'גל T', c: 'c-t', title: `גל ${ltr('T')} – רה-פולריזציה מהאפיקרד לאנדוקרד`,
+    text: () => `לתאי האפיקרד (השכבה החיצונית של הדופן) פוטנציאל פעולה קצר יותר, ולכן הם מתאוששים ראשונים – למרות שהופעלו אחרונים; גם הקודקוד מתאושש לפני הבסיס. גל ההתאוששות נע בכיוון ההפוך להפעלה, וגם הסימן החשמלי שלו הפוך – שני ה"היפוכים" מבטלים זה את זה, ולכן ${ltr('T')} חיובי כמו ה-${ltr('QRS')} (ושלילי ב-${ltr('aVR')}). הווקטור מצביע מהאזורים שעדיין בפלטו אל האזורים שכבר התאוששו.` },
+  tp: { tag: 'מקטע TP', c: 'ink-3', title: 'מנוחה חשמלית עד הפעימה הבאה',
+    text: () => `כל התאים חזרו למתח המנוחה. אין וקטור; הלב ממתין לירי הבא של הקוצב הסינוסי.` },
+};
+let lastPhase = '', lastLeadHTML = '';
+function updateExplain(t, vec) {
+  const ph = phaseAt(t), P = PH[ph];
+  if (ph !== lastPhase || explainDirty) {
+    $('phaseTag').textContent = P.tag; $('phasePill').style.color = C[P.c] || C['ink-2'];
+    $('phaseTitle').innerHTML = P.title; $('phaseText').innerHTML = P.text(t);
+    lastPhase = ph; explainDirty = false;
+  } else if (P.dyn) $('phaseText').innerHTML = P.text(t);
+  const { mag, proj, val } = vec, L = S.lead, aug = L.startsWith('aV');
+  const cos = mag > 1e-6 ? proj / mag : 0;
+  let s;
+  const nm = `<b>${ltr(L)}</b>`, vv = ltr('(' + fmtmV(val) + ')'); // parentheses inside the LTR isolate so they never wrap away from the number
+  if (mag < 0.035) s = `${nm}: אין כמעט וקטור (אין הבדלי מתח) ${RLM}←${RLM} קו איזואלקטרי ${vv}.`;
+  else if (Math.abs(cos) < 0.26) s = `${nm}: הווקטור כמעט ניצב לציר החיבור ${RLM}←${RLM} ההטל קטן, סטייה קטנה ${vv}.`;
+  else if (val > 0) s = `${nm}: הווקטור פונה אל הקוטב החיובי של החיבור ${RLM}←${RLM} סטייה חיובית ${vv}.`;
+  else s = `${nm}: הווקטור פונה הרחק מהקוטב החיובי של החיבור ${RLM}←${RLM} סטייה שלילית ${vv}.`;
+  if (aug && mag >= 0.035) s += ` <span style="color:var(--ink-3)">בחיבור מוגבר הערך הוא ${ltr('0.87')} × ההטל.</span>`;
+  if (s !== lastLeadHTML) { $('leadLine').innerHTML = s; lastLeadHTML = s; }
+  const Hv = vec.Hv, frontal = Math.atan2(-Hv[1], Hv[0]) * 180 / Math.PI;
+  $('readouts').innerHTML = `<span>זמן: <b>${ltr(Math.round(t) + ' ms')}</b></span><span>גודל הווקטור: <b>${ltr(mag.toFixed(2) + ' mV')}</b></span>` +
+    (mag >= 0.035 ? `<span>כיוון במישור החזיתי: <b>${ltr((frontal >= 0 ? '+' : '−') + Math.abs(Math.round(frontal)) + '°')}</b></span>` : '');
+}
+let explainDirty = true;
+
+// ===================================================== main update / render
+let dirty = true;
+let lastLabelScale = 0;
+function resize() {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  if (COL.rest && labelScale() !== lastLabelScale) { lastLabelScale = labelScale(); buildLabels(); }
+  renderer.setSize(w, h, false); camera.aspect = w / Math.max(1, h); camera.updateProjectionMatrix();
+  stripCache = null; for (const nm of LEADS) minis[nm].cache = null;
+  dirty = true;
+}
+function update() {
+  const t = S.t;
+  updateTissue(t);
+  updateConduction(t);
+  const vec = updateVectors(t);
+  labelGroup.visible = S.labels;
+  if (S.labels) { // fade labels whose side of the heart faces away from the camera
+    const cd = camera.position.clone().normalize();
+    for (const sp of labelGroup.children) {
+      if (sp.userData.n) sp.material.opacity = clamp(0.2 + (sp.userData.n.dot(cd) + 0.25) * 1.3, 0.12, 1);
+      if (S.clip !== 'off' && clipPlane.distanceToPoint(sp.userData.anchor || sp.position) < 0) sp.material.opacity = 0;
+    }
+  }
+  surfMat.opacity = S.opacity; surfMat.visible = S.opacity > 0.01;
+  renderer.render(scene, camera);
+  drawCompass();
+  drawStrip(t);
+  for (const nm of LEADS) drawMini(nm, t);
+  updateExplain(t, vec);
+  $('hud').innerHTML = `${ltr(Math.round(t) + ' ms')} · ${PH[phaseAt(t)].tag}` + (S.view === 'lead' ? ` · מבט מהקוטב החיובי של ${ltr(S.lead)}: וקטור שמתקרב אליכם = סטייה חיובית` : '');
+}
+let lastNow = performance.now();
+function loop(now) {
+  requestAnimationFrame(loop);
+  const dt = Math.min(100, now - lastNow); lastNow = now;
+  if (S.playing) {
+    S.t += dt * S.speed;
+    if (S.t > BEAT) { if (S.loop) S.t = 0; else { S.t = BEAT; setPlaying(false); } }
+    dirty = true;
+  }
+  animateCamera();
+  if (controls.update()) dirty = true;
+  if (dirty) { dirty = false; update(); }
+}
+
+// ===================================================== UI wiring
+function setT(t, fromUser) { S.t = clamp(t, 0, BEAT); dirty = true; if (fromUser) writeHash(); }
+function setPlaying(p) {
+  S.playing = p;
+  $('playIcon').setAttribute('d', p ? 'M6 4.5h4.2v15H6zM13.8 4.5H18v15h-4.2z' : 'M7 4.5v15l13-7.5z');
+  $('playBtn').setAttribute('aria-label', p ? 'השהה' : 'נגן');
+  if (!p) writeHash();
+}
+function selectLead(nm) {
+  S.lead = nm; $('leadNow').textContent = nm;
+  document.querySelectorAll('.leadbtn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lead === nm)));
+  buildAxisLabels(); stripCache = null; lastLeadHTML = '';
+  if (S.view === 'lead') setView('lead');
+  dirty = true; writeHash();
+}
+function buildLeadButtons() {
+  const g = $('leadGrid');
+  for (const nm of LEADS) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'leadbtn'; b.textContent = nm; b.dataset.lead = nm;
+    b.setAttribute('aria-pressed', String(nm === S.lead)); b.addEventListener('click', () => selectLead(nm)); g.appendChild(b);
+  }
+}
+// strip pointer + keyboard
+let dragging = false;
+function stripT(e) { const r = strip.getBoundingClientRect(); const g = stripGeom || stripLayout(); return g.xToT(e.clientX - r.left); }
+strip.addEventListener('pointerdown', e => { dragging = true; strip.setPointerCapture(e.pointerId); if (S.playing) setPlaying(false); setT(stripT(e), true); });
+strip.addEventListener('pointermove', e => { if (dragging) setT(stripT(e), true); });
+strip.addEventListener('pointerup', () => { dragging = false; });
+strip.addEventListener('pointercancel', () => { dragging = false; });
+strip.addEventListener('keydown', e => {
+  const step = e.shiftKey ? 20 : 2;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { setT(S.t + step, true); e.preventDefault(); }
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { setT(S.t - step, true); e.preventDefault(); }
+  else if (e.key === 'Home') { setT(0, true); e.preventDefault(); }
+  else if (e.key === 'End') { setT(BEAT, true); e.preventDefault(); }
+  else if (e.key === 'PageUp') { setT(S.t + 40, true); e.preventDefault(); }
+  else if (e.key === 'PageDown') { setT(S.t - 40, true); e.preventDefault(); }
+  else if (e.key === ' ') { setPlaying(!S.playing); e.preventDefault(); }
+});
+$('playBtn').addEventListener('click', () => { if (!S.playing && S.t >= BEAT - 1) S.t = 0; setPlaying(!S.playing); });
+document.querySelectorAll('#speedSeg button').forEach(b => b.addEventListener('click', () => {
+  S.speed = +b.dataset.speed; document.querySelectorAll('#speedSeg button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+}));
+$('tgLoopPlay').addEventListener('change', e => { S.loop = e.target.checked; });
+const TG = { tgCS: 'cs', tgArrows: 'arrows', tgVec: 'vec', tgAxis: 'axis', tgLoop: 'vloop', tgLabels: 'labels' };
+for (const [id, k] of Object.entries(TG)) $(id).addEventListener('change', e => { S[k] = e.target.checked; dirty = true; });
+$('opacity').addEventListener('input', e => { S.opacity = 1 - e.target.value / 100; dirty = true; }); // slider = transparency (0 = opaque wall)
+document.querySelectorAll('#clipSeg button').forEach(b => b.addEventListener('click', () => {
+  S.clip = b.dataset.clip; updateClip(); setView(S.clip === 'off' ? 'front' : 'cut'); dirty = true; writeHash();
+}));
+$('clipAt').addEventListener('input', e => { S.clipAt = e.target.value / 10; clipPlane.constant = S.clipAt; dirty = true; writeHash(); });
+document.querySelectorAll('#viewSeg button').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+$('resetBtn').addEventListener('click', () => setView('front'));
+controls.addEventListener('start', () => { camTarget = null; });
+controls.addEventListener('change', () => { dirty = true; });
+$('themeBtn').addEventListener('click', () => {
+  const next = { auto: 'light', light: 'dark', dark: 'auto' }[themeMode];
+  applyTheme(next); store.set('hv_theme', next); onThemeChange();
+});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (themeMode === 'auto') onThemeChange(); });
+function onThemeChange() { themeColors(); stripCache = null; for (const nm of LEADS) minis[nm].cache = null; explainDirty = true; dirty = true; }
+// help
+function showHelp(v) { $('help').hidden = !v; if (v) $('helpClose').focus(); }
+$('helpBtn').addEventListener('click', () => showHelp(true));
+$('helpClose').addEventListener('click', () => { showHelp(false); store.set('hv_help_seen', '1'); });
+$('help').addEventListener('click', e => { if (e.target === $('help')) { showHelp(false); store.set('hv_help_seen', '1'); } });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !$('help').hidden) { showHelp(false); store.set('hv_help_seen', '1'); }
+  if ((e.key === 'd' || e.key === 'D') && e.altKey) { $('debug').hidden = !$('debug').hidden; }
+});
+window.addEventListener('hashchange', () => { applyHashState(parseHash(), false); });
+new ResizeObserver(() => resize()).observe(stageEl);
+new ResizeObserver(() => { stripCache = null; dirty = true; }).observe(strip);
+new ResizeObserver(() => { for (const nm of LEADS) minis[nm].cache = null; dirty = true; }).observe($('miniGrid'));
+
+// debug panel (self-check)
+function renderDebug() {
+  const rows = CHECK.checks.map(c => `<tr><td class="${c.ok ? 'ok' : 'bad'}">${c.ok ? 'PASS' : 'FAIL'}</td><td>${c.name}</td><td>${c.val}</td></tr>`).join('');
+  const lt = Object.entries(CHECK.leads).map(([k, v]) => `<tr><td>${k}</td><td>${v.P}</td><td>${v.q}</td><td>${v.R}</td><td>${v.S}</td><td>${v.RS}</td><td>${v.ST20}</td><td>${v.T}</td></tr>`).join('');
+  const s = CHECK.summary;
+  $('debugBody').innerHTML = `<p dir="ltr" style="margin:6px 0">${CHECK.pass ? '<b class="ok">ALL PASS</b>' : '<b class="bad">SOME FAIL</b>'} — PR ${s.PR} ms · QRS ${s.QRS} ms · QT ${s.QT} ms · axis ${s.axis}° (I/aVF ${s.axisIaVF}°) · transition ${s.transition} · points ${s.nPoints} · build ${s.buildMs} ms</p>
+  <table><tbody>${rows}</tbody></table>
+  <table style="margin-top:8px"><thead><tr><th>lead</th><th>P</th><th>q</th><th>R</th><th>S</th><th>R/S</th><th>ST@J+20</th><th>T</th></tr></thead><tbody>${lt}</tbody></table>
+  <p dir="ltr" style="margin:6px 0;color:var(--ink-3)">events (ms): ${Object.entries(EV).map(([k, v]) => k + ' ' + Math.round(v)).join(' · ')}</p>`;
+}
+
+function applyHashState(h, initial) {
+  if (h.theme) applyTheme(h.theme);
+  for (const k of ['cs', 'arrows', 'vec', 'axis', 'vloop', 'labels']) if (k in h) { S[k] = h[k]; const id = Object.keys(TG).find(x => TG[x] === k); $(id).checked = h[k]; }
+  if ('opacity' in h) { S.opacity = h.opacity; $('opacity').value = Math.round((1 - h.opacity) * 100); }
+  if ('speed' in h) { S.speed = h.speed; document.querySelectorAll('#speedSeg button').forEach(x => x.setAttribute('aria-pressed', String(+x.dataset.speed === S.speed))); }
+  if ('clip' in h) S.clip = h.clip;
+  if ('clipAt' in h) { S.clipAt = h.clipAt; $('clipAt').value = Math.round(h.clipAt * 10); }
+  if (!initial && h.theme) onThemeChange();
+  if (h.lead && h.lead !== S.lead) { S.lead = h.lead; if (!initial) selectLead(h.lead); }
+  if ('t' in h) S.t = clamp(h.t, 0, BEAT);
+  updateClip();
+  if (h.view) setView(h.view, initial); else if (initial) setView(S.clip !== 'off' ? 'cut' : S.view, true);
+  if ('playing' in h) setPlaying(h.playing);
+  if (h.debug) $('debug').hidden = false;
+  dirty = true;
+}
+
+// ===================================================== start
+const H0 = parseHash();
+if (H0.solo) document.body.classList.add('solo');
+if (!H0.theme) applyTheme(themeMode);
+buildLeadButtons(); buildMinis();
+applyHashState(H0, true);
+$('leadNow').textContent = S.lead;
+document.querySelectorAll('.leadbtn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lead === S.lead)));
+$('stripMeta').innerHTML = `${ltr('PR ' + Math.round(EV.qrsOn - EV.pOn) + ' ms')} · ${ltr('QRS ' + Math.round(EV.qrsOff - EV.qrsOn) + ' ms')} · ${ltr('QT ' + Math.round(EV.tEnd - EV.qrsOn) + ' ms')}`;
+renderDebug();
+await document.fonts.ready.catch(() => {});
+themeColors();
+resize();
+$('loading').remove();
+if (H0.help === '1' || (H0.help !== '0' && !store.get('hv_help_seen'))) showHelp(true); // help=1 forces the dialog (for links from the course guide)
+requestAnimationFrame(loop);
+{ const t0 = performance.now(); update(); window.__firstFrameMs = performance.now() - t0; }
+document.body.dataset.ready = '1';
+if (H0.selftest) setTimeout(async () => { // dev: exercise the UI handlers and report errors
+  const log = [], wait = ms => new Promise(r => setTimeout(r, ms));
+  const step = async (name, fn) => { try { await fn(); update(); log.push('ok ' + name); } catch (e) { log.push('ERR ' + name + ': ' + e.message); } };
+  const r = strip.getBoundingClientRect();
+  const pe = (type, x) => strip.dispatchEvent(new PointerEvent(type, { clientX: x, clientY: r.top + r.height / 2, pointerId: 1, bubbles: true }));
+  await step('drag strip', async () => { pe('pointerdown', r.left + r.width * 0.3); pe('pointermove', r.left + r.width * 0.36); pe('pointerup', r.left + r.width * 0.36); if (!(S.t > 200 && S.t < 300)) throw new Error('t=' + S.t); });
+  await step('keys', async () => { const t0 = S.t; strip.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })); if (S.t !== t0 + 2) throw new Error('arrow'); });
+  for (const nm of ['V1', 'aVR', 'III']) await step('lead ' + nm, async () => { document.querySelector(`.leadbtn[data-lead="${nm}"]`).click(); if (S.lead !== nm) throw new Error(S.lead); });
+  await step('mini click', async () => { minis.V6.c.click(); if (S.lead !== 'V6') throw new Error(S.lead); });
+  for (const v of ['left', 'inferior', 'posterior', 'lead', 'front']) await step('view ' + v, async () => { document.querySelector(`#viewSeg [data-view="${v}"]`).click(); for (let i = 0; i < 40; i++) animateCamera(); });
+  for (const c of ['frontal', 'transverse', 'long', 'off']) await step('clip ' + c, async () => { document.querySelector(`#clipSeg [data-clip="${c}"]`).click(); });
+  for (const id of Object.keys(TG)) await step('toggle ' + id, async () => { $(id).click(); $(id).click(); });
+  await step('opacity', async () => { const o = $('opacity'); o.value = 20; o.dispatchEvent(new Event('input')); o.value = 62; o.dispatchEvent(new Event('input')); });
+  await step('play', async () => { $('playBtn').click(); await wait(400); $('playBtn').click(); });
+  await step('speed', async () => { document.querySelector('#speedSeg [data-speed="1"]').click(); if (S.speed !== 1) throw new Error(); });
+  await step('theme', async () => { $('themeBtn').click(); $('themeBtn').click(); $('themeBtn').click(); });
+  await step('help', async () => { $('helpBtn').click(); $('helpClose').click(); });
+  await wait(500);
+  log.push('hash ' + location.hash);
+  console.log('[heart-vector] SELFTEST ' + (log.some(l => l.startsWith('ERR')) ? 'FAIL' : 'OK') + ' | ' + log.join(' | '));
+}, 300);
+if (document.documentElement.scrollWidth > window.innerWidth + 1) console.warn('[heart-vector] horizontal overflow', document.documentElement.scrollWidth, window.innerWidth);
+console.log('[heart-vector] ready in', Math.round(performance.now() - T0), 'ms (incl. model + surface); surface vertices', surfNear.length, '; one frame update', Math.round(window.__firstFrameMs), 'ms');
+</script>
+</body>
+</html>
